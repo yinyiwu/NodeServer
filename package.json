@@ -18,8 +18,6 @@
         "xlsx": "*",
         "underscore": "*",
         "moment": "*",
-        "jsbarcode": "*",
-        "canvas": "*",
         "jszip": "2.4.0",
 
 
@@ -42,7 +40,10 @@
         "vue-loader": "^9.5.1",
         "webpack": "^1.13.2",
         "webpack-dev-server": "^1.16.1",
-        "webpack-merge": "^0.14.1"
+        "webpack-merge": "^0.14.1",
+        "canvas": "*",
+        "jsbarcode": "*",
+
     },
     "scripts": {
         "build": "webpack",

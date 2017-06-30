@@ -1,0 +1,52 @@
+{
+    "name": "ap-server",
+    "version": "2.1.0",
+    "description": "ap server",
+    "author": {
+        "name": "yinyiwu"
+    },
+    "dependencies": {
+        "express": "*",
+        "connect-timeout": "*",
+        "compression": "*",
+        "serve-favicon": "*",
+        "morgan": "*",
+        "mssql": "*",
+        "squel": "*",
+        "body-parser": "*",
+        "nedb": "*",
+        "xlsx": "*",
+        "underscore": "*",
+        "moment": "*",
+        "jsbarcode": "*",
+        "canvas": "*",
+        "jszip": "2.4.0",
+
+
+        "vue": "^2.0.1",
+        "vue-i18n": "*",
+        "vue-resource": "*"
+
+    },
+    "devDependencies": {
+        "babel-core": "^6.17.0",
+        "babel-loader": "^6.2.5",
+        "babel-plugin-transform-runtime": "^6.15.0",
+        "babel-preset-es2015": "^6.16.0",
+        "css-loader": "^0.25.0",
+        "file-loader": "^0.9.0",
+        "style-loader": "^0.13.1",
+        "json-loader": "*",
+        "url-loader": "^0.5.7",
+        "vue-hot-reload-api": "^2.0.6",
+        "vue-loader": "^9.5.1",
+        "webpack": "^1.13.2",
+        "webpack-dev-server": "^1.16.1",
+        "webpack-merge": "^0.14.1"
+    },
+    "scripts": {
+        "build": "webpack",
+        "dev": "webpack-dev-server"
+    },
+    "readmeFilename": "README.md"
+}

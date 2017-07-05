@@ -2,7 +2,6 @@ var express = require('express');
 var timeout = require('connect-timeout');
 var sql = require('mssql');
 var bodyParser = require('body-parser');
-var config = require('./config/database.json');
 var morgan = require('morgan');
 var compression = require('compression');
 var favicon = require('serve-favicon');
@@ -11,12 +10,10 @@ var path = require('path');
 var app = express()
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
-//instantiate a connection pool
-var cp = new sql.ConnectionPool(config.XMLY5000); //cp = connection pool
 //require route handlers and use the same connection pool everywhere
-var customer = require('./service/customer')(cp);
-var sync = require('./service/sync')(cp);
-var product = require('./service/product')(cp);
+var customer = require('./service/customer');
+var sync = require('./service/sync');
+var product = require('./service/product');
 
 
 //generic express stuff
@@ -76,18 +73,11 @@ app.get('/*', function(req, res) {
 });
 
 
-//connect the pool and start the web server when done
-cp.connect().then(function() {
-    console.log('Connection pool open for duty');
+var server = app.listen(8080, function() {
 
-    var server = app.listen(8080, function() {
+    var host = server.address().address;
+    var port = server.address().port;
 
-        var host = server.address().address;
-        var port = server.address().port;
+    console.log('Example app listening at http://%s:%s', host, port);
 
-        console.log('Example app listening at http://%s:%s', host, port);
-
-    });
-}).catch(function(err) {
-    console.error('Error creating connection pool', err);
 });

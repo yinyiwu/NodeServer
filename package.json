@@ -12,6 +12,7 @@
         "serve-favicon": "*",
         "morgan": "*",
         "mssql": "*",
+        "mysql": "*",
         "squel": "*",
         "body-parser": "*",
         "nedb": "*",
@@ -42,7 +43,7 @@
         "webpack-dev-server": "^1.16.1",
         "webpack-merge": "^0.14.1",
         "canvas": "*",
-        "jsbarcode": "*",
+        "jsbarcode": "*"
 
     },
     "scripts": {

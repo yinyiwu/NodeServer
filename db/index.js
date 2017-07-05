@@ -1,5 +1,25 @@
 var Datastore = require('nedb');
-////"220.133.135.177",
+var mysql = require('mysql');
+var config = require('../config/database.json');
+var mysqlPool = mysql.createPool(config.XMLY5000);
 module.exports = {
-	items:new Datastore({ filename: 'items.db', autoload: true })
+    "XMLY5000": {
+        "query": function(sql, params) {
+            return new Promise(function(resolve, reject) {
+                mysqlPool.getConnection(function(err, conn) {
+                    conn.query(sql, params || [], function(e, results, field) {
+                        if (e) reject(e);
+                        else
+                            resolve(results);
+                    });
+                    conn.release();
+                });
+
+            });
+        }
+    },
+    "items": new Datastore({
+        filename: 'items.db',
+        autoload: true
+    })
 }

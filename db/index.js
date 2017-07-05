@@ -7,9 +7,16 @@ module.exports = {
         "query": function(sql, params) {
             return new Promise(function(resolve, reject) {
                 mysqlPool.getConnection(function(err, conn) {
+                    if (err) {
+                        console.error(err);
+                        reject(err);
+                        return;
+                    }
                     conn.query(sql, params || [], function(e, results, field) {
-                        if (e) reject(e);
-                        else
+                        if (e) {
+                            console.error(e);
+                            reject(e);
+                        } else
                             resolve(results);
                     });
                     conn.release();

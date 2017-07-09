@@ -5,8 +5,20 @@ const moment = require('moment');
 module.exports = {
     findByBcode: async function(req, res, next) {
         try {
-            let result = await db.XMLY5000.query(
-                `SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)) SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
+            let result = await db.XMLY5000.query(`
+
+            	DROP temporary TABLE IF EXISTS sorddt_tmp;
+                       CREATE TEMPORARY TABLE sorddt_tmp (INDEX index_skno (OD_SKNO))        
+                        SELECT st.OD_ID,st.OD_CTNO,st.OD_SKNO,st.OD_PRICE,OD_NO,OD_QTY 
+                                        FROM SORDDT st JOIN (
+                                            SELECT MAX(OD_ID) OD_ID FROM SORDDT WHERE OD_CTNO = ? AND OD_NO > '2014-06-01' AND OD_QTY > 0
+                                            GROUP BY OD_CTNO,OD_SKNO ORDER BY OD_ID
+                                        ) stt 
+                                        ON (st.OD_ID = stt.OD_ID)
+                                        ORDER BY st.OD_CTNO,st.OD_SKNO;  
+
+
+                SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)) SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
 						FROM (         
 						   SELECT  
 							CASE WHEN (sd.OD_PRICE is null) THEN 0 ELSE 1 END FirstSale 
@@ -17,22 +29,21 @@ module.exports = {
 							,OD_NO
 							,OD_PRICE
 							,OD_CTNO
-							,rank() OVER (PARTITION BY SK_NO,OD_CTNO ORDER BY sd.OD_NO DESC) r
 							FROM 
 								(SELECT SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,
 								SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY
 								 from SSTOCK WHERE SK_BCODE = ? ) a 
 								left join SSTOCKKIND b ON (a.SK_IKIND = b.SK_KINDID)
-								left join (select * from SORDDT WHERE OD_CTNO = ? AND OD_NO > '2014-06-01' AND OD_QTY > 0) sd 
+								left join sorddt_tmp sd 
 								ON (a.SK_NO = sd.OD_SKNO )
-							) t WHERE r = 1 
+							) t
 							group by OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,
 							SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)),SK_UNIT,
 							SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,
 							SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME
-							ORDER BY OD_CTNO`, [req.params.code, req.get('CustomerNO')]);
-            if (result.length > 0)
-                res.send(result);
+							ORDER BY OD_CTNO`, [req.get('CustomerNO'), req.params.code]);
+            if (result[result.length - 1].length > 0)
+                res.send(result[result.length - 1]);
             else
                 res.send([]);
         } catch (e) {
@@ -41,7 +52,17 @@ module.exports = {
     },
     findByNo: async function(req, res, next) {
         try {
-            let result = await db.XMLY5000.query(` 
+            let result = await db.XMLY5000.query(`
+            	DROP temporary TABLE IF EXISTS sorddt_tmp;
+                       CREATE TEMPORARY TABLE sorddt_tmp (INDEX index_skno (OD_SKNO))        
+                        SELECT st.OD_ID,st.OD_CTNO,st.OD_SKNO,st.OD_PRICE,OD_NO,OD_QTY 
+                                        FROM SORDDT st JOIN (
+                                            SELECT MAX(OD_ID) OD_ID FROM SORDDT WHERE OD_CTNO = ? AND OD_NO > '2014-06-01' AND OD_QTY > 0
+                                            GROUP BY OD_CTNO,OD_SKNO ORDER BY OD_ID
+                                        ) stt 
+                                        ON (st.OD_ID = stt.OD_ID)
+                                        ORDER BY st.OD_CTNO,st.OD_SKNO;
+
             	SELECT FirstSale,Price,Amount,SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
 						FROM (         
 						   SELECT  
@@ -50,15 +71,14 @@ module.exports = {
 							,CASE WHEN(sd.OD_QTY is null) then 0 else sd.OD_QTY end as Amount
 							,CASE WHEN (b.SK_KINDNAME IS null) then '' else b.SK_KINDNAME end SK_KINDNAME
 							,a.*
-							,rank() OVER (PARTITION BY SK_NO ORDER BY sd.OD_DATE1 DESC) r
 							FROM 
 								(SELECT * FROM SSTOCK WHERE SK_NO = ? ) a 
 								LEFT JOIN SSTOCKKIND b ON(a.SK_IKIND = b.SK_KINDID)
-								LEFT JOIN (SELECT * FROM SORDDT where OD_CTNO = ? ) sd 
-								ON (a.SK_NO = sd.OD_SKNO AND OD_CTNO = ? )
-							) t WHERE r = 1`, [req.params.no, req.get('CustomerNO'), req.get('CustomerNO')]);
-            if (result.length > 0)
-                res.send(result);
+								LEFT JOIN sorddt_tmp sd
+								ON (a.SK_NO = sd.OD_SKNO)
+							) t WHERE r = 1`, [req.get('CustomerNO'), req.params.no]);
+            if (result[result.length - 1].length > 0)
+                res.send(result[result.length - 1]);
             else
                 res.send([]);
         } catch (e) {

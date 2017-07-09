@@ -7,7 +7,8 @@ const fs = require("fs");
 module.exports = {
     items: async function(req, res, next) {
         try {
-            let result = await db.XMLY5000.query(`SELECT SK_NO,SK_NAME,SK_BCODE FROM SSTOCK 
+            let result = await db.XMLY5000.query(`
+                    SELECT SK_NO,SK_NAME,SK_BCODE FROM SSTOCK 
                         /*WHERE 
                         LENGTH(SK_BCODE) > 12 
                         AND SK_NAME not like '%不用%' 
@@ -33,64 +34,59 @@ module.exports = {
     },
     customerOrderHistory: async function(req, res, next) {
         try {
-            let result = await db.XMLY5000.query(`DECLARE @sstock table(  
-                            SK_NO nvarchar(30),  
-                            SK_BCODE nvarchar(30),  
-                            SK_NAME nvarchar(60),  
-                            SK_SPEC nvarchar(1000),
-                            SK_UNIT nvarchar(8),
-                            SK_SUPPNO nvarchar(10),
-                            SK_SUPPNAME nvarchar(60),
-                            SK_LOCATE nvarchar(60),
-                            SK_LPRICE1 float,
-                            SK_LPRICE2 float,
-                            SK_IKIND nvarchar(10),
-                            SK_NOWQTY float,
-                            SK_KINDNAME nvarchar(60))  
-                        INSERT INTO @sstock
+            let result = await db.XMLY5000.query(`
+                       DROP temporary TABLE IF EXISTS sstock_tmp;
+                       CREATE TEMPORARY TABLE sstock_tmp (INDEX index_skno (SK_NO))        
                         SELECT SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,
                                 SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY
                                 ,CASE WHEN (k.SK_KINDNAME IS null) THEN '' ELSE k.SK_KINDNAME END SK_KINDNAME
                                  FROM SSTOCK s
-                                 LEFT JOIN SSTOCKKIND k ON (s.SK_IKIND = k.SK_KINDID)
-                                    WHERE
-                                    LEN(SK_BCODE) > 12 
-                                        AND SK_NAME not like '%不用%' 
-                                        AND SK_NAME not like '%停用%' 
-                                        AND SK_NAME not like '%不要用%'
-                                        AND SK_NAME not like '%停賣%'
-                                        AND SK_NAME not like '%停售%'
-                                        AND SK_STOP = 0
-
-                        (SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,
-                        SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)) SK_SPEC,SK_UNIT,SK_SUPPNO,
-                        SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
-                        FROM (         
-                           SELECT  
-                            CASE WHEN (sd.OD_PRICE is null) THEN 0 ELSE 1 END FirstSale 
-                            ,CASE WHEN(sd.OD_PRICE is null) THEN SK_LPRICE2 ELSE sd.OD_PRICE END Price
-                            ,CASE WHEN(sd.OD_QTY is null) THEN 0 ELSE sd.OD_QTY END Amount
-                            ,a.*
-                            ,OD_PRICE
-                            ,OD_NO
-                            ,OD_CTNO
-                            ,rank() OVER (PARTITION BY SK_NO,OD_CTNO ORDER BY sd.OD_NO DESC) r
-                            FROM
-                                @sstock a
-                                LEFT JOIN (select * from SORDDT WHERE OD_NO > '2014-06-01' AND OD_QTY > 0) sd 
-                                ON (a.SK_NO = sd.OD_SKNO )
-                            ) t WHERE r = 1 
-                            group by OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,
-                            SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)),SK_UNIT,
-                            SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,
-                            SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME
-                        UNION
-                            SELECT null AS OD_NO,null AS OD_CTNO,0 AS FirstSale,SK_LPRICE2 AS Price,null OD_PRICE ,0 Amount,
-                                *
-                            FROM @sstock
-                        )
-                        ORDER BY OD_CTNO`);
-            res.send(result);
+                                 LEFT JOIN SSTOCKKIND k ON (s.SK_IKIND = k.SK_KINDID);
+                                 
+                       DROP temporary TABLE IF EXISTS sorddt_tmp;
+                       CREATE TEMPORARY TABLE sorddt_tmp (INDEX index_skno (OD_SKNO))        
+                        SELECT st.OD_ID,st.OD_CTNO,st.OD_SKNO,st.OD_PRICE,OD_NO,OD_QTY 
+                                        FROM SORDDT st JOIN (
+                                            SELECT MAX(OD_ID) OD_ID FROM SORDDT WHERE OD_NO > '2014-06-01' AND OD_QTY > 0
+                                            GROUP BY OD_CTNO,OD_SKNO ORDER BY OD_ID
+                                        ) stt 
+                                        ON (st.OD_ID = stt.OD_ID)
+                                        ORDER BY st.OD_CTNO,st.OD_SKNO;  
+                                        
+                       DROP temporary TABLE IF EXISTS sstock_tmp2;
+                       CREATE TEMPORARY TABLE sstock_tmp2        
+                        SELECT null AS OD_NO,null AS OD_CTNO,0 AS FirstSale,SK_LPRICE2 AS Price,null OD_PRICE ,0 Amount, sstock_tmp.* FROM sstock_tmp;
+         
+                        SELECT * FROM         
+                        (
+                            SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,
+                            SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,
+                            SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
+                            FROM (         
+                               SELECT  
+                                CASE WHEN (sd.OD_PRICE is null) THEN 0 ELSE 1 END FirstSale 
+                                ,CASE WHEN(sd.OD_PRICE is null) THEN SK_LPRICE2 ELSE sd.OD_PRICE END Price
+                                ,CASE WHEN(sd.OD_QTY is null) THEN 0 ELSE sd.OD_QTY END Amount
+                                ,SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
+                                ,OD_PRICE
+                                ,OD_NO
+                                ,OD_CTNO
+                                FROM
+                                    sstock_tmp
+                                    LEFT JOIN sorddt_tmp sd 
+                                    ON (SK_NO = sd.OD_SKNO )
+                                ) t1 
+                                where OD_NO is not null
+                                group by OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,
+                                SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,
+                                SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,
+                                SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME
+                            UNION 
+                            SELECT * FROM sstock_tmp2
+                        ) b        
+                        ORDER BY OD_CTNO;
+                        `);
+            res.send(result[result.length - 1]);
         } catch (e) {
             res.status(500).send(e);
         }
@@ -121,9 +117,7 @@ module.exports = {
         console.log(res.pipe);
         //var writer = getWritableStreamSomehow();
         //res.pipe(writer);
-
         //writer.pipe("my test GGGG!");
-
         res.write("my test !!!!");
         res.write("8888889");
         res.write("999999");

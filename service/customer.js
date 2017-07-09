@@ -24,8 +24,18 @@ module.exports = {
             } else {
                 try {
                     let result = await db.XMLY5000.query(`
+                            DROP temporary TABLE IF EXISTS sorddt_tmp;
+                            CREATE TEMPORARY TABLE sorddt_tmp (INDEX index_skno (OD_SKNO))        
+                                SELECT st.OD_ID,st.OD_CTNO,st.OD_SKNO,st.OD_PRICE,OD_NO,OD_QTY 
+                                            FROM SORDDT st JOIN (
+                                                SELECT MAX(OD_ID) OD_ID FROM SORDDT WHERE OD_CTNO = ? AND OD_NO > '2014-06-01' AND OD_QTY > 0
+                                                GROUP BY OD_CTNO,OD_SKNO ORDER BY OD_ID
+                                            ) stt 
+                                            ON (st.OD_ID = stt.OD_ID)
+                                            ORDER BY st.OD_CTNO,st.OD_SKNO;
+
                             SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,
-                                SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)) SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,
+                                SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,
                                 SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
                                 FROM (         
                                    SELECT  
@@ -37,25 +47,24 @@ module.exports = {
                                     ,OD_PRICE
                                     ,OD_CTNO
                                     ,OD_NO
-                                    ,rank() OVER (PARTITION BY SK_NO,OD_CTNO ORDER BY sd.OD_NO DESC) r
                                     FROM 
                                         (SELECT SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,
                                         SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY
                                          from SSTOCK) a 
                                         left join SSTOCKKIND b ON (a.SK_IKIND = b.SK_KINDID)
-                                        left join (select * from SORDDT WHERE OD_NO > '2014-06-01' AND OD_QTY > 0) sd 
+                                        left join sorddt_tmp sd 
                                         ON (a.SK_NO = sd.OD_SKNO )
-                                    ) t WHERE 
-                                    r = 1 AND OD_CTNO = ?
+                                    ) t
                                     GROUP BY OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,
-                                    SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)),SK_UNIT,
+                                    SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,
                                     SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,
                                     SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME
                                     ORDER BY OD_NO DESC;
                             `, [no]);
 
                     let indexData = _.indexBy(data, 'SK_NO');
-                    let ret = _.reduce(result, (sum, value, key) => {
+                    let ret = _.reduce(result[result.length - 1]
+, (sum, value, key) => {
                         let v = indexData[value['SK_NO']];
                         if (v) {
                             value = _.extend(value, v, {

@@ -4,6 +4,7 @@
         "host": "104.199.205.130",
         "user": "root",
         "password": "0911853110",
-        "database": "XMLY5000"
+        "database": "XMLY5000",
+        "multipleStatements": true
     }
 }

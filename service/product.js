@@ -76,7 +76,7 @@ module.exports = {
 								LEFT JOIN SSTOCKKIND b ON(a.SK_IKIND = b.SK_KINDID)
 								LEFT JOIN sorddt_tmp sd
 								ON (a.SK_NO = sd.OD_SKNO)
-							) t WHERE r = 1`, [req.get('CustomerNO'), req.params.no]);
+							) t `, [req.get('CustomerNO'), req.params.no]);
             if (result[result.length - 1].length > 0)
                 res.send(result[result.length - 1]);
             else

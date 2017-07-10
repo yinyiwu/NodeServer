@@ -18,7 +18,7 @@ module.exports = {
                                         ORDER BY st.OD_CTNO,st.OD_SKNO;  
 
 
-                SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)) SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
+                SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
 						FROM (         
 						   SELECT  
 							CASE WHEN (sd.OD_PRICE is null) THEN 0 ELSE 1 END FirstSale 
@@ -38,7 +38,7 @@ module.exports = {
 								ON (a.SK_NO = sd.OD_SKNO )
 							) t
 							group by OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,
-							SK_NO,SK_BCODE,SK_NAME,CAST(SK_SPEC AS varchar(max)),SK_UNIT,
+							SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,
 							SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,
 							SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME
 							ORDER BY OD_CTNO`, [req.get('CustomerNO'), req.params.code]);

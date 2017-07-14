@@ -51,9 +51,8 @@ module.exports = {
                                         (SELECT SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,
                                         SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY
                                          from SSTOCK) a 
+                                        join sorddt_tmp sd ON (a.SK_NO = sd.OD_SKNO )
                                         left join SSTOCKKIND b ON (a.SK_IKIND = b.SK_KINDID)
-                                        left join sorddt_tmp sd 
-                                        ON (a.SK_NO = sd.OD_SKNO )
                                     ) t
                                     GROUP BY OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,
                                     SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,
@@ -63,8 +62,7 @@ module.exports = {
                             `, [no]);
 
                     let indexData = _.indexBy(data, 'SK_NO');
-                    let ret = _.reduce(result[result.length - 1]
-, (sum, value, key) => {
+                    let ret = _.reduce(result[result.length - 1], (sum, value, key) => {
                         let v = indexData[value['SK_NO']];
                         if (v) {
                             value = _.extend(value, v, {

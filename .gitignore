@@ -58,7 +58,7 @@ typings/
 .env
 
 # Local DB
-*.db
+items.db
 
 # Temp
 temp/

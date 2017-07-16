@@ -113,6 +113,7 @@ module.exports = {
         let amount = req.params.amount;
         let price = req.params.price;
         let memo = req.params.memo;
+        console.log(req.params);
         db.items.update({
                 _id: id
             }, {

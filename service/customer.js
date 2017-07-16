@@ -113,7 +113,6 @@ module.exports = {
         let amount = req.params.amount;
         let price = req.params.price;
         let memo = req.params.memo;
-        console.log(req.params);
         db.items.update({
                 _id: id
             }, {
@@ -242,7 +241,7 @@ module.exports = {
                                     '品名': item.SK_NAME,
                                     '價格': item.Price,
                                     '數量': item.Amount,
-                                    '備註': item.SK_SPEC
+                                    '備註': `${item.SK_SPEC} ${item.Memo}`
                                 });
                                 return sum;
                             }, []);

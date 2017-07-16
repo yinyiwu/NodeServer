@@ -33,7 +33,8 @@ app.get('/Customer/Order/List', customer.orderList);
 app.post('/Customer/Order/Upload', customer.orderUpload);
 app.post('/Customer/Order/Create', customer.orderCreate);
 app.get('/Customer/Order/Delete/:id', customer.orderDelete);
-app.get('/Customer/Order/Update/:id/:amount/:price/:memo', customer.orderUpdate);
+app.get('/Customer/Order/Update/:id/:amount/:price/:memo?', customer.orderUpdate);
+
 app.get('/Customer/Order/XLSX/:start/:end', customer.orderToExcle);
 app.get('/Customer/Order/History/Item/:no', customer.orderHistory);
 

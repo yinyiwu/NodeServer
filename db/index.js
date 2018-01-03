@@ -1,7 +1,9 @@
-var Datastore = require('nedb');
+var Datastore = require('nedb-promise');
 var mysql = require('mysql');
 var config = require('../config/database.json');
 var mysqlPool = mysql.createPool(config.XMLY5000);
+var storePath = `${__dirname}/store/`;
+console.log(storePath);
 module.exports = {
     "XMLY5000": {
         "query": function(sql, params) {
@@ -25,8 +27,23 @@ module.exports = {
             });
         }
     },
-    "items": new Datastore({
-        filename: 'items.db',
+    p:{
+
+    },
+    "items": Datastore({
+        filename: `${storePath}items.db`,
+        autoload: true
+    }),
+    "pcust": Datastore({
+        filename: `${storePath}pcust.db`,
+        autoload: true
+    }),
+    "sstock": Datastore({
+        filename: `${storePath}sstock.db`,
+        autoload: true
+    }),
+    "sorddt": Datastore({
+        filename: `${storePath}sorddt.db`,
         autoload: true
     })
 }

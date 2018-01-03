@@ -1,0 +1,15 @@
+{
+    "XMLY5000": {
+        "user": "operator",
+        "password": "0911853110",
+        "server": "10.211.55.3",
+        "database": "XMLY5000",
+        "requestTimeout": 60000,
+        "options": {
+            "encrypt": true
+        }
+
+        
+
+    }
+}

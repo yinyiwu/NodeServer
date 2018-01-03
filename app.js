@@ -40,10 +40,10 @@ app.get('/Customer/Order/History/Item/:no', customer.orderHistory);
 
 app.get('/Customer/Daily/Key', customer.orderDaily);
 
-// app.get('/Product/Find/:no', product.findByNo);
-app.get('/Product/Find/:no/:CustomerNO', product.findByNo);
+app.get('/Product/Find/:no', product.findByNo);
+// app.get('/Product/Find/:no/:CustomerNO', product.findByNo);
 
-// app.get('/Product/Find/Barcode/:code', product.findByBcode);
+app.get('/Product/Find/Barcode/:code', product.findByBcode);
 // app.get('/Product/Find/Barcode/:code/:CustomerNO', product.findByBcode);
 
 

@@ -52,8 +52,8 @@ module.exports = {
                 //join
                 let join = sd[item.SK_NO];
                 if (join) {
-                    ret[mkey]['FirstSale'] = join.OD_PRICE ? 0 : 1;
-                    ret[mkey]['Price'] = join.OD_PRICE ? join.OD_PRICE : join.SK_LPRICE2;
+                    ret[mkey]['FirstSale'] = join.OD_PRICE!=undefined ? 0 : 1;
+                    ret[mkey]['Price'] = join.OD_PRICE!=undefined ? join.OD_PRICE : join.SK_LPRICE2;
                     ret[mkey]['Amount'] = join.OD_QTY ? join.OD_QTY : 0;
                     ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME ? item.SK_KINDNAME : '';
                     ret[mkey]['OD_NO'] = join.OD_NO;

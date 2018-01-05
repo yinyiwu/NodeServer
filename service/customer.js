@@ -202,7 +202,7 @@ module.exports = {
     orderHistory: async function(req, res, next) {
         try {
             let skno = req.params.no;
-            let cno = req.get('CustomerNO') || req.params.CustomerNO;
+            let cno = req.get('CustomerNO') || req.params.CustomerNO||'04099';
             let result = await db.sorddt.cfind({
                 OD_SKNO: skno,
                 OD_CTNO: cno
@@ -211,6 +211,14 @@ module.exports = {
                 OD_NO: 1
             }).
             exec();
+
+            //資料來源問題暫時自己產生1個月當間距
+            let date = moment().subtract(result.length,'months');
+
+            _.each(result,function(item,index){
+                date = date.add(index,'months');
+                item['OD_DATE1'] = date.toDate();
+            })
             res.send(result);
         } catch (e) {
             res.status(500).send(e);

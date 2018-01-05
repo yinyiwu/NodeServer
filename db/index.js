@@ -3,7 +3,55 @@ var mysql = require('mysql');
 var config = require('../config/database.json');
 var mysqlPool = mysql.createPool(config.XMLY5000);
 var storePath = `${__dirname}/store/`;
-console.log(storePath);
+
+let items = Datastore({
+    filename: `${storePath}items.db`,
+    autoload: true
+});
+
+items.ensureIndex({
+    fieldName： ' CustomerNO'
+}，function（ err） {
+    console.error(err);
+});
+items.ensureIndex({
+    fieldName： ' SK_BCODE'
+}，function（ err） {
+    console.error(err);
+});
+
+
+
+let pcust = Datastore({
+    filename: `${storePath}pcust.db`,
+    autoload: true
+});
+
+let sstock = Datastore({
+    filename: `${storePath}sstock.db`,
+    autoload: true
+});
+
+sstock.ensureIndex({
+    fieldName： 'SK_BCODE'
+}，function（ err） {
+    console.error(err);
+});
+
+
+let sorddt = Datastore({
+    filename: `${storePath}sorddt.db`,
+    autoload: true
+});
+
+sorddt.ensureIndex({
+    fieldName： 'OD_CTNO'
+}，function（ err） {
+    console.error(err);
+});
+
+
+
 module.exports = {
     "XMLY5000": {
         "query": function(sql, params) {
@@ -27,23 +75,11 @@ module.exports = {
             });
         }
     },
-    p:{
+    p: {
 
     },
-    "items": Datastore({
-        filename: `${storePath}items.db`,
-        autoload: true
-    }),
-    "pcust": Datastore({
-        filename: `${storePath}pcust.db`,
-        autoload: true
-    }),
-    "sstock": Datastore({
-        filename: `${storePath}sstock.db`,
-        autoload: true
-    }),
-    "sorddt": Datastore({
-        filename: `${storePath}sorddt.db`,
-        autoload: true
-    })
+    "items": items,
+    "pcust": pcust,
+    "sstock": sstock,
+    "sorddt": sorddt
 }

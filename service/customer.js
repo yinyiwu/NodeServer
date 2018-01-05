@@ -21,9 +21,9 @@ module.exports = {
                 CreateTime: -1
             }).exec();
 
-            _.each(data,function(d){
-                if(!d.Price){
-                    d.Price=0; 
+            _.each(data, function(d) {
+                if (!d.Price) {
+                    d.Price = 0;
                 }
             });
 
@@ -53,8 +53,8 @@ module.exports = {
                 //join
                 let join = sd[item.SK_NO];
                 if (join) {
-                    ret[mkey]['FirstSale'] = join.OD_PRICE!=undefined ? 0 : 1;
-                    ret[mkey]['Price'] = join.OD_PRICE!=undefined ? join.OD_PRICE : join.SK_LPRICE2;
+                    ret[mkey]['FirstSale'] = join.OD_PRICE != undefined ? 0 : 1;
+                    ret[mkey]['Price'] = join.OD_PRICE != undefined ? join.OD_PRICE : join.SK_LPRICE2;
                     ret[mkey]['Amount'] = join.OD_QTY ? join.OD_QTY : 0;
                     ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME ? item.SK_KINDNAME : '';
                     ret[mkey]['OD_NO'] = join.OD_NO;
@@ -200,11 +200,11 @@ module.exports = {
             let skno = req.params.no;
             let cno = req.get('CustomerNO') || req.params.CustomerNO;
             let result = await db.sorddt.cfind({
-                OD_SKNO:skno,
-                OD_CTNO:cno
+                OD_SKNO: skno,
+                OD_CTNO: cno
             }).
             sort({
-                OD_NO:1
+                OD_NO: 1
             }).
             exec();
             res.send(result);
@@ -212,156 +212,156 @@ module.exports = {
             res.status(500).send(e);
         }
     },
-    orderToExcle: function(req, res, next) {
+    orderToExcle: async function(req, res, next) {
         let start = req.params.start;
         let end = req.params.end;
         res.set("fileName", moment(start).format('YYYYMMDD'));
-        db.items.cfind({
-                $and: [{
-                    CreateTime: {
-                        $gte: moment(start).toDate(),
-                        $lte: moment(end).toDate()
-                    }
-                }, {
-                    SK_BCODE: {
-                        $exists: true
-                    }
-                }]
-            })
-            .sort({
-                CreateTime: -1
-            }).exec(
-                function(err, dataSet) {
-                    //console.log(dataSet);
-                    if (err) {
-                        res.status(500).send(err);
-                    } else {
-                        let groupData = _.groupBy(dataSet, 'Customer');
-                        let wb = {
-                            SheetNames: [],
-                            Sheets: {}
-                        };
-
-
-                        //案名稱不得使用下列字元: 大於或小於符號 (< >)、星號 ( * )、問號 ( ? )、雙引號 ( " )、分隔號或縱線字元 ( | )、冒號 ( : )、正斜線 ( / ) 或括弧 ( [] )。
-
-                        function fixSheetName(name) {
-                            name = name.replace(/[\[\]\:\<\>\*\/\|\?\"\\\：]/g, " ");
-                            console.log(name);
-                            return name.substring(0, 30);
+        try {
+            let dataSet = await db.items.cfind({
+                    $and: [{
+                        CreateTime: {
+                            $gte: moment(start).toDate(),
+                            $lte: moment(end).toDate()
                         }
+                    }, {
+                        SK_BCODE: {
+                            $exists: true
+                        }
+                    }]
+                })
+                .sort({
+                    CreateTime: -1
+                }).exec();
+
+            let groupData = _.groupBy(dataSet, 'CustomerNO');
+            let wb = {
+                SheetNames: [],
+                Sheets: {}
+            };
+
+            let customers = await db.pcust.find({});
+            let customersIdx = _.indexBy(customers,'CT_NO');
+
+            function fixSheetName(code) {
+                let customer = customersIdx[code];
+                if (customer) {
+                    //案名稱不得使用下列字元: 大於或小於符號 (< >)、星號 ( * )、問號 ( ? )、雙引號 ( " )、分隔號或縱線字元 ( | )、冒號 ( : )、正斜線 ( / ) 或括弧 ( [] )。
+                    let name = customer.CT_NAME.replace(/[\[\]\:\<\>\*\/\|\?\"\\\：]/g, " ");
+                    console.log(name);
+                    return `${code} ${name.substring(0, 30)}`;
+                }
+                return code;
+            }
+
+            _.each(groupData, (datas, key) => {
+                key = fixSheetName(key);
+                let _data = _.reduce(datas, function(sum, item) {
+                    sum.push({
+                        '貨號': item.SK_NO,
+                        '條碼': item.SK_BCODE,
+                        '品名': item.SK_NAME,
+                        '價格': item.Price,
+                        '數量': item.Amount,
+                        '備註': `${item.SK_SPEC} ${item.Memo}`
+                    });
+                    return sum;
+                }, []);
+
+                let _headers = [];
+                if (_data.length > 0) {
+                    _headers = _.keys(_data[0]) || [];
+                }
+                let headers = _headers
+                    .map((v, i) => Object.assign({}, {
+                        v: v,
+                        position: String.fromCharCode(65 + i) + 1
+                    }))
+                    .reduce((prev, next) => Object.assign({}, prev, {
+                        [next.position]: {
+                            v: next.v
+                        }
+                    }), {});
+                let data = _data
+                    .map((v, i) => _headers.map((k, j) => Object.assign({}, {
+                        v: v[k],
+                        position: String.fromCharCode(65 + j) + (i + 2)
+                    })))
+                    .reduce((prev, next) => prev.concat(next))
+                    .reduce((prev, next) => Object.assign({}, prev, {
+                        [next.position]: {
+                            v: next.v
+                        }
+                    }), {});
+                let output = Object.assign({}, headers, data);
+                let outputPos = Object.keys(output);
+                let ref = outputPos[0] + ':' + outputPos[outputPos.length - 1];
 
 
-                        _.each(groupData, (datas, key) => {
-                            key = fixSheetName(key);
-                            let _data = _.reduce(datas, function(sum, item) {
-                                sum.push({
-                                    '貨號': item.SK_NO,
-                                    '條碼': item.SK_BCODE,
-                                    '品名': item.SK_NAME,
-                                    '價格': item.Price,
-                                    '數量': item.Amount,
-                                    '備註': `${item.SK_SPEC} ${item.Memo}`
-                                });
-                                return sum;
-                            }, []);
 
-                            //console.log(_data);
-
-                            let _headers = [];
-                            if (_data.length > 0) {
-                                _headers = _.keys(_data[0]) || [];
+                wb.SheetNames.push(key);
+                wb.Sheets[key] = Object.assign({}, output, {
+                    '!ref': ref,
+                    '!cols': [{
+                        wch: 8
+                    }, {
+                        wch: 20
+                    }, {
+                        wch: 30
+                    }, {
+                        wch: 5
+                    }, {
+                        wch: 5
+                    }, {
+                        wch: 60
+                    }, {
+                        wch: 30
+                    }],
+                    /*'!rows': [{
+                        hpt: 10
+                    },{
+                        hpt: 20
+                    },{
+                        hpt: 30
+                    },{
+                        hpt: 40
+                    },{
+                        hpt: 50
+                    },{
+                        hpt: 60
+                    },{
+                        hpt: 70
+                    }],*/
+                    '!images': [{
+                        /*name: 'text.png',
+                        fs.readFileSync('text.png');
+                        data: pic.toString('base64'),
+                        opts: {
+                            base64: true
+                        },
+                        position: {
+                            type: 'twoCellAnchor',
+                            attrs: {
+                                editAs: 'oneCell'
+                            },
+                            from: {
+                                col: 6,
+                                row: 1
+                            },
+                            to: {
+                                col: 7,
+                                row: 5
                             }
-                            let headers = _headers
-                                .map((v, i) => Object.assign({}, {
-                                    v: v,
-                                    position: String.fromCharCode(65 + i) + 1
-                                }))
-                                .reduce((prev, next) => Object.assign({}, prev, {
-                                    [next.position]: {
-                                        v: next.v
-                                    }
-                                }), {});
-                            let data = _data
-                                .map((v, i) => _headers.map((k, j) => Object.assign({}, {
-                                    v: v[k],
-                                    position: String.fromCharCode(65 + j) + (i + 2)
-                                })))
-                                .reduce((prev, next) => prev.concat(next))
-                                .reduce((prev, next) => Object.assign({}, prev, {
-                                    [next.position]: {
-                                        v: next.v
-                                    }
-                                }), {});
-                            let output = Object.assign({}, headers, data);
-                            let outputPos = Object.keys(output);
-                            let ref = outputPos[0] + ':' + outputPos[outputPos.length - 1];
-
-
-
-                            wb.SheetNames.push(key);
-                            wb.Sheets[key] = Object.assign({}, output, {
-                                '!ref': ref,
-                                '!cols': [{
-                                    wch: 8
-                                }, {
-                                    wch: 20
-                                }, {
-                                    wch: 30
-                                }, {
-                                    wch: 5
-                                }, {
-                                    wch: 5
-                                }, {
-                                    wch: 60
-                                }, {
-                                    wch: 30
-                                }],
-                                /*'!rows': [{
-                                    hpt: 10
-                                },{
-                                    hpt: 20
-                                },{
-                                    hpt: 30
-                                },{
-                                    hpt: 40
-                                },{
-                                    hpt: 50
-                                },{
-                                    hpt: 60
-                                },{
-                                    hpt: 70
-                                }],*/
-                                '!images': [{
-                                    /*name: 'text.png',
-                                    fs.readFileSync('text.png');
-                                    data: pic.toString('base64'),
-                                    opts: {
-                                        base64: true
-                                    },
-                                    position: {
-                                        type: 'twoCellAnchor',
-                                        attrs: {
-                                            editAs: 'oneCell'
-                                        },
-                                        from: {
-                                            col: 6,
-                                            row: 1
-                                        },
-                                        to: {
-                                            col: 7,
-                                            row: 5
-                                        }
-                                    }*/
-                                }]
-                            });
-
-
-                        });
-                        let fileName = "./temp/" + new Date().getTime() + '.xlsx';
-                        XLSX.writeFile(wb, fileName);
-                        res.download(fileName);
-                    }
+                        }*/
+                    }]
                 });
+
+
+            });
+            let fileName = "./temp/" + new Date().getTime() + '.xlsx';
+            XLSX.writeFile(wb, fileName);
+            res.download(fileName);
+        } catch (e) {
+            res.status(500).send(e);
+        }
     }
 };

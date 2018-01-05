@@ -149,39 +149,27 @@ module.exports = {
             let sstock = await db.sstock.find({
                 SK_NO:no
             });
-            
-            let t = _.reduce(sstock,(ret,item,key)=>{
 
-                let mkey = `${item.Price}-${item.OD_PRICE}-${item.SK_NO}`;
-
-                if(ret[mkey]){
-                    ret[mkey]['Amount'] += item.Amount;
-                }
-                else{
-                    ret[mkey] = item;
-                }
-                //join
+            if(sstock.length>0){
+                let item = sstock[0];
                 let join = sd[item.SK_NO];
                 if(join){
-                    ret[mkey]['FirstSale'] = join.OD_PRICE?0:1;
-                    ret[mkey]['Price'] = join.OD_PRICE?join.OD_PRICE:join.SK_LPRICE2;
-                    ret[mkey]['Amount'] = join.OD_QTY?join.OD_QTY:0;
+                    item['FirstSale'] = join.OD_PRICE?0:1;
+                    item['Price'] = join.OD_PRICE?join.OD_PRICE:join.SK_LPRICE2;
+                    item['Amount'] = join.OD_QTY?join.OD_QTY:0;
                 }
                 else{
-                    ret[mkey]['FirstSale'] = 0;
-                    ret[mkey]['Price'] = item.SK_LPRICE2;
-                    ret[mkey]['Amount'] = 0;
+                    item['FirstSale'] = 0;
+                    item['Price'] = item.SK_LPRICE2;
+                    item['Amount'] = 0;
                 }
-                
-                ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME?item.SK_KINDNAME:'';              
+                res.send([item]); 
+            }
+            else{
+                res.send([]);
+            }
 
-
-                return ret;
-            },{});
-
-            let recordset = _.values(t);
-
-            res.send(recordset); 
+            
 
         } catch (e) {
             res.status(500).send(e);

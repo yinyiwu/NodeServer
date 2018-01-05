@@ -23,7 +23,6 @@ items.ensureIndex({
 });
 
 
-
 let pcust = Datastore({
     filename: `${storePath}pcust.db`,
     autoload: true
@@ -40,6 +39,13 @@ sstock.ensureIndex({
     if (err)
         console.error(err);
 });
+sstock.ensureIndex({
+    fieldName: 'SK_NO'
+}, function(err) {
+    if (err)
+        console.error(err);
+});
+
 
 
 let sorddt = Datastore({

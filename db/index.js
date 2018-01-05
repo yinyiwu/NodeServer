@@ -10,14 +10,16 @@ let items = Datastore({
 });
 
 items.ensureIndex({
-    fieldName： ' CustomerNO'
-}，function（ err） {
-    console.error(err);
+    fieldName: 'CustomerNO'
+}, function(err) {
+    if (err)
+        console.error(err);
 });
 items.ensureIndex({
-    fieldName： ' SK_BCODE'
-}，function（ err） {
-    console.error(err);
+    fieldName: 'SK_BCODE'
+}, function(err) {
+    if (err)
+        console.error(err);
 });
 
 
@@ -33,9 +35,10 @@ let sstock = Datastore({
 });
 
 sstock.ensureIndex({
-    fieldName： 'SK_BCODE'
-}，function（ err） {
-    console.error(err);
+    fieldName: 'SK_BCODE'
+}, function(err) {
+    if (err)
+        console.error(err);
 });
 
 
@@ -45,9 +48,10 @@ let sorddt = Datastore({
 });
 
 sorddt.ensureIndex({
-    fieldName： 'OD_CTNO'
-}，function（ err） {
-    console.error(err);
+    fieldName: 'OD_CTNO'
+}, function(err) {
+    if (err)
+        console.error(err);
 });
 
 

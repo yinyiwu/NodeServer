@@ -48,6 +48,7 @@ module.exports = {
                     ret[mkey]['Amount'] += item.Amount;
                 } else {
                     ret[mkey] = item;
+                    delete ret[mkey]._id;
                 }
                 //join
                 let join = sd[item.SK_NO];

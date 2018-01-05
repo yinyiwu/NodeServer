@@ -163,6 +163,7 @@ module.exports = {
                     item['Price'] = item.SK_LPRICE2;
                     item['Amount'] = 0;
                 }
+                item['SK_KINDNAME'] = item.SK_KINDNAME||'';
                 res.send([item]); 
             }
             else{

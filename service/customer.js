@@ -44,15 +44,17 @@ module.exports = {
                         -${item.SK_LOCATE}-${item.SK_LPRICE1}-${item.SK_LPRICE2}-
                         -${item.SK_IKIND}-${item.SK_NOWQTY}-${item.SK_KINDNAME}-`;
 
-                if (ret[mkey]) {
-                    ret[mkey]['Amount'] += item.Amount;
-                } else {
-                    ret[mkey] = item;
-                    delete ret[mkey]._id;
-                }
                 //join
                 let join = sd[item.SK_NO];
                 if (join) {
+
+                    if (ret[mkey]) {
+                        ret[mkey]['Amount'] += item.Amount;
+                    } else {
+                        ret[mkey] = item;
+                        delete ret[mkey]._id;
+                    }
+
                     ret[mkey]['FirstSale'] = join.OD_PRICE != undefined ? 0 : 1;
                     ret[mkey]['Price'] = join.OD_PRICE != undefined ? join.OD_PRICE : join.SK_LPRICE2;
                     ret[mkey]['Amount'] = join.OD_QTY ? join.OD_QTY : 0;
@@ -60,15 +62,17 @@ module.exports = {
                     ret[mkey]['OD_NO'] = join.OD_NO;
                     ret[mkey]['OD_PRICE'] = join.OD_PRICE;
                     ret[mkey]['OD_CTNO'] = join.OD_CTNO;
-                } else {
-                    ret[mkey]['FirstSale'] = 0;
-                    ret[mkey]['Price'] = item.SK_LPRICE2;
-                    ret[mkey]['Amount'] = 0;
-                    ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME ? item.SK_KINDNAME : '';
-                    ret[mkey]['OD_NO'] = null;
-                    ret[mkey]['OD_PRICE'] = null;
-                    ret[mkey]['OD_CTNO'] = null;
-                }
+                } 
+                // else {
+                //     delete ret[mkey];
+                //     // ret[mkey]['FirstSale'] = 0;
+                //     // ret[mkey]['Price'] = item.SK_LPRICE2;
+                //     // ret[mkey]['Amount'] = 0;
+                //     // ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME ? item.SK_KINDNAME : '';
+                //     // ret[mkey]['OD_NO'] = null;
+                //     // ret[mkey]['OD_PRICE'] = null;
+                //     // ret[mkey]['OD_CTNO'] = null;
+                // }
 
                 return ret;
             }, {});

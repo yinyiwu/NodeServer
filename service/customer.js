@@ -21,6 +21,12 @@ module.exports = {
                 CreateTime: -1
             }).exec();
 
+            _.each(data,function(d){
+                if(!d.Price){
+                    d.Price=0; 
+                }
+            });
+
             let sorddt = await db.sorddt.find({
                 OD_CTNO: cno
             });

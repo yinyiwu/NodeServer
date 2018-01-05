@@ -5,133 +5,89 @@ const moment = require('moment');
 const fs = require('fs');
 
 module.exports = {
-    orderList: function(req, res, next) {
-        let cno = req.get('CustomerNO')||req.params.CustomerNO;
-        db.items.find({
-            SK_BCODE: {
-                $exists: true
-            },
-            CreateTime: {
-                $gte: moment(0, "HH").toDate(),
-                $lte: new Date()
-            },
-            CustomerNO: cno
-        }).sort({
-            CreateTime: -1
-        }).exec(async function(err, data) {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                try {
-                    // let result = await db.XMLY5000.query(`
-                    //         DROP temporary TABLE IF EXISTS sorddt_tmp;
-                    //         CREATE TEMPORARY TABLE sorddt_tmp (INDEX index_skno (OD_SKNO))        
-                    //             SELECT st.OD_ID,st.OD_CTNO,st.OD_SKNO,st.OD_PRICE,OD_NO,OD_QTY 
-                    //                         FROM SORDDT st JOIN (
-                    //                             SELECT MAX(OD_ID) OD_ID FROM SORDDT WHERE OD_CTNO = ? AND OD_NO > '2014-06-01' AND OD_QTY > 0
-                    //                             GROUP BY OD_CTNO,OD_SKNO ORDER BY OD_ID
-                    //                         ) stt 
-                    //                         ON (st.OD_ID = stt.OD_ID)
-                    //                         ORDER BY st.OD_CTNO,st.OD_SKNO;
+    orderList: async function(req, res, next) {
+        try {
+            let cno = req.get('CustomerNO') || req.params.CustomerNO;
+            let data = await db.items.cfind({
+                SK_BCODE: {
+                    $exists: true
+                },
+                CreateTime: {
+                    $gte: moment(0, "HH").toDate(),
+                    $lte: new Date()
+                },
+                CustomerNO: cno
+            }).sort({
+                CreateTime: -1
+            }).exec();
 
-                    //         SELECT DISTINCT OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,SUM(Amount) Amount,
-                    //             SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,SK_SUPPNAME,
-                    //             SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME 
-                    //             FROM (         
-                    //                SELECT  
-                    //                 CASE WHEN (sd.OD_PRICE is null) THEN 0 ELSE 1 END FirstSale 
-                    //                 ,CASE WHEN(sd.OD_PRICE is null) THEN SK_LPRICE2 ELSE sd.OD_PRICE END Price
-                    //                 ,CASE WHEN(sd.OD_QTY is null) THEN 0 ELSE sd.OD_QTY END Amount
-                    //                 ,CASE WHEN (b.SK_KINDNAME IS null) THEN '' ELSE b.SK_KINDNAME END SK_KINDNAME
-                    //                 ,a.*
-                    //                 ,OD_PRICE
-                    //                 ,OD_CTNO
-                    //                 ,OD_NO
-                    //                 FROM 
-                    //                     (SELECT SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,SK_SUPPNO,
-                    //                     SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,SK_LPRICE2,SK_IKIND,SK_NOWQTY
-                    //                      from SSTOCK) a 
-                    //                     join sorddt_tmp sd ON (a.SK_NO = sd.OD_SKNO )
-                    //                     left join SSTOCKKIND b ON (a.SK_IKIND = b.SK_KINDID)
-                    //                 ) t
-                    //                 GROUP BY OD_NO,OD_CTNO,FirstSale,Price,OD_PRICE,
-                    //                 SK_NO,SK_BCODE,SK_NAME,SK_SPEC,SK_UNIT,
-                    //                 SK_SUPPNO,SK_SUPPNAME,SK_LOCATE,SK_LPRICE1,
-                    //                 SK_LPRICE2,SK_IKIND,SK_NOWQTY,SK_KINDNAME
-                    //                 ORDER BY OD_NO DESC;
-                    //         `, [no]);
+            let sorddt = await db.sorddt.find({
+                OD_CTNO: cno
+            });
 
-                    let sorddt = await db.sorddt.find({
-                        OD_CTNO:cno
-                    });
+            let sd = _.indexBy(sorddt, 'OD_SKNO');
 
-                    let sd = _.indexBy(sorddt,'OD_SKNO');
+            let sstock = await db.sstock.find({});
 
-                    let sstock = await db.sstock.find({});
-                    
-                    let t = _.reduce(sstock,(ret,item,key)=>{
+            let t = _.reduce(sstock, (ret, item, key) => {
 
-                        let mkey = `${item.OD_NO}-${item.OD_CTNO}-${item.FirstSale}
+                let mkey = `${item.OD_NO}-${item.OD_CTNO}-${item.FirstSale}
                         -${item.Price}-${item.OD_PRICE}-${item.SK_NO}-
                         -${item.SK_BCODE}-${item.SK_NAME}-${item.SK_SPEC}-
                         -${item.SK_UNIT}-${item.SK_SUPPNO}-${item.SK_SUPPNAME}-
                         -${item.SK_LOCATE}-${item.SK_LPRICE1}-${item.SK_LPRICE2}-
                         -${item.SK_IKIND}-${item.SK_NOWQTY}-${item.SK_KINDNAME}-`;
 
-                        if(ret[mkey]){
-                            ret[mkey]['Amount'] += item.Amount;
-                        }
-                        else{
-                            ret[mkey] = item;
-                        }
-                        //join
-                        let join = sd[item.SK_NO];
-                        if(join){
-                            ret[mkey]['FirstSale'] = join.OD_PRICE?0:1;
-                            ret[mkey]['Price'] = join.OD_PRICE?join.OD_PRICE:join.SK_LPRICE2;
-                            ret[mkey]['Amount'] = join.OD_QTY?join.OD_QTY:0;
-                            ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME?item.SK_KINDNAME:'';
-                            ret[mkey]['OD_NO'] = join.OD_NO;
-                            ret[mkey]['OD_PRICE'] = join.OD_PRICE;
-                            ret[mkey]['OD_CTNO'] = join.OD_CTNO;                    
-                        }
-                        else{
-                            ret[mkey]['FirstSale'] = 0;
-                            ret[mkey]['Price'] = item.SK_LPRICE2;
-                            ret[mkey]['Amount'] = 0;
-                            ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME?item.SK_KINDNAME:'';
-                            ret[mkey]['OD_NO'] = item.OD_NO;
-                            ret[mkey]['OD_PRICE'] = item.OD_PRICE;
-                            ret[mkey]['OD_CTNO'] = item.OD_CTNO;
-                        }
-
-                        return ret;
-                    },{});
-
-                    let result = _.values(t);
-
-
-
-                    let indexData = _.indexBy(data, 'SK_NO');
-                    let ret = _.reduce(result[result.length - 1], (sum, value, key) => {
-                        let v = indexData[value['SK_NO']];
-                        if (v) {
-                            value = _.extend(value, v, {
-                                ordered: 1
-                            });
-                            //data = _.without(data,v);
-                        } else {
-                            sum.push(value);
-                        }
-                        return sum;
-                    }, []);
-                    res.send(_.union(data, ret));
-
-                } catch (e) {
-                    res.status(500).send(e);
+                if (ret[mkey]) {
+                    ret[mkey]['Amount'] += item.Amount;
+                } else {
+                    ret[mkey] = item;
                 }
-            }
-        });
+                //join
+                let join = sd[item.SK_NO];
+                if (join) {
+                    ret[mkey]['FirstSale'] = join.OD_PRICE ? 0 : 1;
+                    ret[mkey]['Price'] = join.OD_PRICE ? join.OD_PRICE : join.SK_LPRICE2;
+                    ret[mkey]['Amount'] = join.OD_QTY ? join.OD_QTY : 0;
+                    ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME ? item.SK_KINDNAME : '';
+                    ret[mkey]['OD_NO'] = join.OD_NO;
+                    ret[mkey]['OD_PRICE'] = join.OD_PRICE;
+                    ret[mkey]['OD_CTNO'] = join.OD_CTNO;
+                } else {
+                    ret[mkey]['FirstSale'] = 0;
+                    ret[mkey]['Price'] = item.SK_LPRICE2;
+                    ret[mkey]['Amount'] = 0;
+                    ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME ? item.SK_KINDNAME : '';
+                    ret[mkey]['OD_NO'] = null;
+                    ret[mkey]['OD_PRICE'] = null;
+                    ret[mkey]['OD_CTNO'] = null;
+                }
+
+                return ret;
+            }, {});
+
+            let result = _.values(t);
+
+            let indexData = _.indexBy(data, 'SK_NO');
+
+            let ret = _.reduce(result, (sum, value, key) => {
+                let v = indexData[value['SK_NO']];
+                if (v) {
+                    value = _.extend(value, v, {
+                        ordered: 1
+                    });
+                    //data = _.without(data,v);
+                } else {
+                    sum.push(value);
+                }
+                return sum;
+            }, []);
+            res.send(_.union(data, ret));
+        } catch (e) {
+            console.error(e);
+            res.status(500).send(e);
+        }
+
     },
     orderUpload: function(req, res, next) {
         let datas = req.body;
@@ -196,49 +152,55 @@ module.exports = {
             }
         });
     },
-    orderDaily: function(req, res, next) {
-        db.items.find({
-            SK_BCODE: {
-                $exists: true
-            }
-        }).sort({
-            CreateTime: -1
-        }).exec(function(err, result) {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                let v = _.reduce(result, (sum, data) => {
-                    let key = moment(data.CreateTime).format("YYYY-MM-DD");
-                    if (!sum[key]) {
-                        //sum[key] = {key:key,start:moment(key).format("YYYY-MM-DD 00:00:00"),end:moment(key).format("YYYY-MM-DD 23:59:59")};
-                        sum[key] = {
-                            key: key,
-                            start: moment(data.CreateTime),
-                            end: moment(data.CreateTime),
-                            Date: key,
-                            Download: '下載'
-                        }
-                    } else {
-                        let dataDate = moment(data.CreateTime);
-                        if (dataDate.isBefore(sum[key].start)) {
-                            sum[key].start = dataDate;
-                        } else if (dataDate.isAfter(sum[key].end)) {
-                            sum[key].end = dataDate;
-                        }
+    orderDaily: async function(req, res, next) {
+        try {
+            let result = await db.items.cfind({
+                SK_BCODE: {
+                    $exists: true
+                }
+            }).sort({
+                CreateTime: -1
+            }).exec();
+            let v = _.reduce(result, (sum, data) => {
+                let key = moment(data.CreateTime).format("YYYY-MM-DD");
+                if (!sum[key]) {
+                    //sum[key] = {key:key,start:moment(key).format("YYYY-MM-DD 00:00:00"),end:moment(key).format("YYYY-MM-DD 23:59:59")};
+                    sum[key] = {
+                        key: key,
+                        start: moment(data.CreateTime),
+                        end: moment(data.CreateTime),
+                        Date: key,
+                        Download: '下載'
                     }
-                    return sum;
-                }, {});
-                res.send(_.values(v));
-            }
-        });
+                } else {
+                    let dataDate = moment(data.CreateTime);
+                    if (dataDate.isBefore(sum[key].start)) {
+                        sum[key].start = dataDate;
+                    } else if (dataDate.isAfter(sum[key].end)) {
+                        sum[key].end = dataDate;
+                    }
+                }
+                return sum;
+            }, {});
+            res.send(_.values(v));
+        } catch (e) {
+            console.error(e);
+            res.status(500).send(e);
+        }
     },
     orderHistory: async function(req, res, next) {
         try {
-            let result = await db.XMLY5000.query(`SELECT * from SORDDT WHERE OD_SKNO = ? AND OD_CTNO = ? ORDER BY OD_NO ASC`, [req.params.no, req.get('CustomerNO')]);
-            if (result.length > 0)
-                res.send(result);
-            else
-                res.send([]);
+            let skno = req.params.no;
+            let cno = req.get('CustomerNO') || req.params.CustomerNO;
+            let result = await db.sorddt.cfind({
+                OD_SKNO:skno,
+                OD_CTNO:cno
+            }).
+            sort({
+                OD_NO:1
+            }).
+            exec();
+            res.send(result);
         } catch (e) {
             res.status(500).send(e);
         }
@@ -247,7 +209,7 @@ module.exports = {
         let start = req.params.start;
         let end = req.params.end;
         res.set("fileName", moment(start).format('YYYYMMDD'));
-        db.items.find({
+        db.items.cfind({
                 $and: [{
                     CreateTime: {
                         $gte: moment(start).toDate(),

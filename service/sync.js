@@ -1,8 +1,6 @@
 const db = require('../db');
 const _ = require('underscore');
 const moment = require('moment');
-//const JsBarcode = require('jsbarcode');
-//const Canvas = require("canvas");
 const fs = require("fs");
 module.exports = {
     items: async function(req, res, next) {
@@ -15,8 +13,8 @@ module.exports = {
     },
     customer: async function(req, res, next) {
         try {
-            let result = await db.pcust.find({});
             // let result = await db.XMLY5000.query(`SELECT * FROM PCUST WHERE CT_NO not like '%-%'`);
+            let result = await db.pcust.find({});
             res.send(result);
         } catch (e) {
             res.status(500).send(e);
@@ -100,7 +98,8 @@ module.exports = {
     barcode: function(req, res, next) {
 
         let barcode = req.param('barcode');
-
+        const JsBarcode = require('jsbarcode');
+        const Canvas = require("canvas");
         var canvas = new Canvas();
         JsBarcode(canvas, barcode);
         let now = new Date().getTime();
@@ -120,13 +119,9 @@ module.exports = {
 
     },
     test: function(req, res, next) {
-        console.log(res.pipe);
-        //var writer = getWritableStreamSomehow();
-        //res.pipe(writer);
-        //writer.pipe("my test GGGG!");
-        res.write("my test !!!!");
-        res.write("8888889");
-        res.write("999999");
+        res.write("test\n");
+        res.write("ack\n");
+        res.write("ok\n");
         res.end();
 
         //req.pipe("my test GGG!").pipe(res);

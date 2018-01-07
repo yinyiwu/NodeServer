@@ -49,13 +49,13 @@ module.exports = {
 
         	let sorddt = await db.sorddt.find({
                 OD_CTNO:cno
-            });
+            },{_id:0});
 
             let sd = _.indexBy(sorddt,'OD_SKNO');
 
             let sstock = await db.sstock.find({
                 SK_BCODE:code
-            });
+            },{_id:0});
             
             let t = _.reduce(sstock,(ret,item,key)=>{
 
@@ -142,14 +142,13 @@ module.exports = {
 
             let sorddt = await db.sorddt.find({
                 OD_CTNO:cno
-            });
+            },{_id:0});
 
             let sd = _.indexBy(sorddt,'OD_SKNO');
 
             let sstock = await db.sstock.find({
                 SK_NO:no
-            });
-
+            },{_id:0});
             if(sstock.length>0){
                 let item = sstock[0];
                 let join = sd[item.SK_NO];

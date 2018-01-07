@@ -33,7 +33,9 @@ module.exports = {
 
             let sd = _.indexBy(sorddt, 'OD_SKNO');
 
-            let sstock = await db.sstock.find({});
+            let sstock = await db.sstock.find({}, {
+                _id: 0
+            });
 
             let t = _.reduce(sstock, (ret, item, key) => {
 
@@ -52,7 +54,6 @@ module.exports = {
                         ret[mkey]['Amount'] += item.Amount;
                     } else {
                         ret[mkey] = item;
-                        delete ret[mkey]._id;
                     }
 
                     ret[mkey]['FirstSale'] = join.OD_PRICE != undefined ? 0 : 1;
@@ -62,7 +63,7 @@ module.exports = {
                     ret[mkey]['OD_NO'] = join.OD_NO;
                     ret[mkey]['OD_PRICE'] = join.OD_PRICE;
                     ret[mkey]['OD_CTNO'] = join.OD_CTNO;
-                } 
+                }
                 // else {
                 //     delete ret[mkey];
                 //     // ret[mkey]['FirstSale'] = 0;
@@ -106,6 +107,9 @@ module.exports = {
             data.CustomerNO = req.get('CustomerNO');
             data.CreateTime = new Date(data.CreateTime);
         })
+
+        console.info(datas);
+
         db.items.insert(datas, function(err, datas) {
             if (err) {
                 res.send(err);
@@ -114,24 +118,31 @@ module.exports = {
             }
         });
     },
-    orderCreate: function(req, res, next) {
+    orderCreate: async function(req, res, next) {
         let data = req.body;
         data.CustomerNO = req.get('CustomerNO');
         data.CreateTime = new Date();
-        db.items.insert(data, function(err, data) {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                res.send(data);
-            }
-        });
+        console.info(data);
+        try {
+            let record = await db.items.insert(data);
+            res.send(record);
+        } catch (e) {
+            res.status(500).send(e);
+        }
     },
-    orderUpdate: function(req, res, next) {
+    orderUpdate: async function(req, res, next) {
         let id = req.params.id;
         let amount = req.params.amount;
         let price = req.params.price;
         let memo = req.params.memo;
-        db.items.update({
+        console.log({
+                    id:id,
+                    Amount: amount,
+                    Price: price,
+                    Memo: memo
+                });
+        try {
+            let numUpdated = await db.items.update({
                 _id: id
             }, {
                 $set: {
@@ -139,29 +150,25 @@ module.exports = {
                     Price: price,
                     Memo: memo
                 }
-            }, {},
-            function(err, data) {
-                if (err) {
-                    res.status(500).send(err);
-                } else {
-                    res.send({
-                        numUpdated: data
-                    });
-                }
+            }, {});
+            res.send({
+                numUpdated: numUpdated
             });
+        } catch (e) {
+            res.status(500).send(e);
+        }
     },
-    orderDelete: function(req, res, next) {
-        db.items.remove({
-            _id: req.params.id
-        }, {}, function(err, numRemoved) {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                res.send({
-                    numRemoved: numRemoved
-                });
-            }
-        });
+    orderDelete: async function(req, res, next) {
+        try {
+            let numRemoved = await db.items.remove({
+                _id: req.params.id
+            }, {});
+            res.send({
+                numRemoved: numRemoved
+            });
+        } catch (e) {
+            res.status(500).send(e);
+        }
     },
     orderDaily: async function(req, res, next) {
         try {
@@ -202,7 +209,7 @@ module.exports = {
     orderHistory: async function(req, res, next) {
         try {
             let skno = req.params.no;
-            let cno = req.get('CustomerNO') || req.params.CustomerNO||'04099';
+            let cno = req.get('CustomerNO') || req.params.CustomerNO || '04099';
             let result = await db.sorddt.cfind({
                 OD_SKNO: skno,
                 OD_CTNO: cno
@@ -213,10 +220,10 @@ module.exports = {
             exec();
 
             //資料來源問題暫時自己產生1個月當間距
-            let date = moment().subtract(result.length,'months');
+            let date = moment().subtract(result.length, 'months');
 
-            _.each(result,function(item,index){
-                date = date.add(index,'months');
+            _.each(result, function(item, index) {
+                date = date.add(index, 'months');
                 item['OD_DATE1'] = date.toDate();
             })
             res.send(result);
@@ -252,7 +259,7 @@ module.exports = {
             };
 
             let customers = await db.pcust.find({});
-            let customersIdx = _.indexBy(customers,'CT_NO');
+            let customersIdx = _.indexBy(customers, 'CT_NO');
 
             function fixSheetName(code) {
                 let customer = customersIdx[code];

@@ -20,7 +20,7 @@ var product = require('./service/product');
 var app = express();
 
 app.use(compression());
-app.use(morgan('combined'));
+app.use(morgan('tiny'));
 app.use(timeout(60000));
 
 app.use(bodyParser.urlencoded({

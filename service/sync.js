@@ -5,7 +5,7 @@ const fs = require("fs");
 module.exports = {
     items: async function(req, res, next) {
         try {
-            let result = await db.sstock.find({});
+            let result = await db.sstock.find({},{_id: 0});
             res.send(result);
         } catch (e) {
             res.status(500).send(e);
@@ -14,7 +14,7 @@ module.exports = {
     customer: async function(req, res, next) {
         try {
             // let result = await db.XMLY5000.query(`SELECT * FROM PCUST WHERE CT_NO not like '%-%'`);
-            let result = await db.pcust.find({});
+            let result = await db.pcust.find({},{_id: 0});
             res.send(result);
         } catch (e) {
             res.status(500).send(e);
@@ -24,7 +24,7 @@ module.exports = {
     customerOrderHistory: async function(req, res, next) {
         try {
 
-            let sstock = await db.sstock.find({});
+            let sstock = await db.sstock.find({},{_id: 0});
             let sstockTmp = _.map(sstock,item=>{
                 let i = _.clone(item);
                 i.OD_NO = null;
@@ -35,9 +35,59 @@ module.exports = {
                 return i;
             });
 
-            let sorddt = await db.sorddt.find({});
+            let sorddt = await db.sorddt.find({},{_id: 0});
 
-            res.send([]);
+            let sd = _.indexBy(sorddt,'OD_SKNO');
+
+
+            let t = _.reduce(sstock, (ret, item, key) => {
+
+                let mkey = `${item.OD_NO}-${item.OD_CTNO}-${item.FirstSale}
+                        -${item.Price}-${item.OD_PRICE}-${item.SK_NO}-
+                        -${item.SK_BCODE}-${item.SK_NAME}-${item.SK_SPEC}-
+                        -${item.SK_UNIT}-${item.SK_SUPPNO}-${item.SK_SUPPNAME}-
+                        -${item.SK_LOCATE}-${item.SK_LPRICE1}-${item.SK_LPRICE2}-
+                        -${item.SK_IKIND}-${item.SK_NOWQTY}-${item.SK_KINDNAME}-`;
+
+                //join
+                let join = sd[item.SK_NO];
+                if (join) {
+
+                    if (ret[mkey]) {
+                        ret[mkey]['Amount'] += item.Amount;
+                    } else {
+                        ret[mkey] = item;
+                    }
+
+                    ret[mkey]['FirstSale'] = join.OD_PRICE != undefined ? 0 : 1;
+                    ret[mkey]['Price'] = join.OD_PRICE != undefined ? join.OD_PRICE : join.SK_LPRICE2;
+                    ret[mkey]['Amount'] = join.OD_QTY ? join.OD_QTY : 0;
+                    ret[mkey]['SK_KINDNAME'] = item.SK_KINDNAME ? item.SK_KINDNAME : '';
+                    ret[mkey]['OD_NO'] = join.OD_NO;
+                    ret[mkey]['OD_PRICE'] = join.OD_PRICE;
+                    ret[mkey]['OD_CTNO'] = join.OD_CTNO;
+                }
+                return ret;
+            }, {});
+
+            let result = _.values(t);
+
+            let indexData = _.indexBy(sstockTmp, 'SK_NO');
+
+            let ret = _.reduce(result, (sum, value, key) => {
+                let v = indexData[value['SK_NO']];
+                if (v) {
+                    value = _.extend(value, v, {
+                        ordered: 1
+                    });
+                    //data = _.without(data,v);
+                } else {
+                    sum.push(value);
+                }
+                return sum;
+            }, []);
+            res.send(_.union(sstockTmp, ret));
+
             // let result = await db.XMLY5000.query(`
             //            DROP temporary TABLE IF EXISTS sstock_tmp;
             //            CREATE TEMPORARY TABLE sstock_tmp (INDEX index_skno (SK_NO))        
@@ -92,6 +142,7 @@ module.exports = {
             //             `);
             // res.send(result[result.length - 1]);
         } catch (e) {
+            console.error(e);
             res.status(500).send(e);
         }
     },

@@ -24,7 +24,8 @@
         "vue": "^2.0.1",
         "vue-i18n": "*",
         "vue-resource": "*",
-        "cross-spawn": "*"
+        "cross-spawn": "*",
+        "axios": "*"
     },
     "devDependencies": {
         "babel-core": "^6.17.0",

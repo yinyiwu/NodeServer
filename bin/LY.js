@@ -2,6 +2,7 @@
 const db = require('../db');
 const spawn = require('cross-spawn');
 const moment = require('moment');
+const axios = require('axios');
 
 const config = {
 	user: 'yangyiwu',
@@ -135,6 +136,10 @@ function gitPush(){
 	spawn.sync('git', ['add','.'], { stdio: 'inherit' });
 	spawn.sync('git', ['commit','-m', moment().format()], { stdio: 'inherit' });
 	spawn.sync('git', ['push'], { stdio: 'inherit' });
+}
+
+function gitRemotePull(){
+	return axios.get('http://35.227.53.206:8080/DataPull');
 }
 
 async function run (){

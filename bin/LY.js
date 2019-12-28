@@ -1,10 +1,12 @@
-const mssql = require('mssql');
+﻿const mssql = require('mssql');
 const db = require('../db');
+const spawn = require('cross-spawn');
+const moment = require('moment');
 
 const config = {
 	user: 'yangyiwu',
 	password: '0911853110',
-	server: '192.168.1.200', // You can use 'localhost\\instance' to connect to named instance
+	server: '127.0.0.1', //You can use 'localhost\\instance' to connect to named instance
 	database: 'XMLY5000',
 	options: {
 		encrypt: true // Use this if you're on Windows Azure
@@ -127,9 +129,20 @@ async function SORDDT() {
 	await sync(recordset, 'sorddt');
 
 }
+
+async function gitPush(){
+	await spawn('git', ['status'], { stdio: 'inherit' });
+	await spawn('git', ['add','.'], { stdio: 'inherit' });
+	await spawn('git', ['commit','-m', moment().format()], { stdio: 'inherit' });
+	await spawn('git', ['push'], { stdio: 'inherit' });
+}
+
 async function run (){
-	await PCUST();
-	await SSTOCK();
-	await SORDDT();
+	//await PCUST();
+	//await SSTOCK();
+	//await SORDDT();
+	console.log('ok!');
+	console.log(await gitPush());
+	//process.exit(0);
 }
 run();

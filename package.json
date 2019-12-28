@@ -16,16 +16,15 @@
         "sqlite3": "*",
         "squel": "*",
         "body-parser": "*",
-        "nedb-promise":"*",
+        "nedb-promise": "*",
         "xlsx": "*",
         "underscore": "*",
         "moment": "*",
         "jszip": "2.4.0",
-
         "vue": "^2.0.1",
         "vue-i18n": "*",
-        "vue-resource": "*"
-
+        "vue-resource": "*",
+        "cross-spawn": "*"
     },
     "devDependencies": {
         "babel-core": "^6.17.0",
@@ -44,7 +43,6 @@
         "webpack-merge": "^0.14.1",
         "canvas": "*",
         "jsbarcode": "*"
-
     },
     "scripts": {
         "build": "webpack",

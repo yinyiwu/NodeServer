@@ -14,7 +14,7 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 var customer = require('./service/customer');
 var sync = require('./service/sync');
 var product = require('./service/product');
-var datapull = require('./service/datapull');
+var { gitPush:datapull } = require('./service/datapull');
 
 //generic express stuff
 var app = express();

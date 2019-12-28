@@ -14,7 +14,7 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 var customer = require('./service/customer');
 var sync = require('./service/sync');
 var product = require('./service/product');
-
+var datapull = require('./service/datapull');
 
 //generic express stuff
 var app = express();
@@ -59,8 +59,9 @@ app.get('/Sync/Item', sync.items);
 app.get('/Sync/Customer', sync.customer);
 app.get('/Sync/Customer/Order/History', sync.customerOrderHistory);
 app.get('/Sync/Barcode/:barcode', sync.barcode);
-
 app.get('/Test', sync.test);
+app.get('/DataPull', datapull);
+
 
 
 

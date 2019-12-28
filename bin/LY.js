@@ -130,19 +130,20 @@ async function SORDDT() {
 
 }
 
-async function gitPush(){
-	await spawn('git', ['status'], { stdio: 'inherit' });
-	await spawn('git', ['add','.'], { stdio: 'inherit' });
-	await spawn('git', ['commit','-m', moment().format()], { stdio: 'inherit' });
-	await spawn('git', ['push'], { stdio: 'inherit' });
+function gitPush(){
+	spawn.sync('git', ['status'], { stdio: 'inherit' });
+	spawn.sync('git', ['add','.'], { stdio: 'inherit' });
+	spawn.sync('git', ['commit','-m', moment().format()], { stdio: 'inherit' });
+	spawn.sync('git', ['push'], { stdio: 'inherit' });
 }
 
 async function run (){
-	//await PCUST();
-	//await SSTOCK();
-	//await SORDDT();
-	console.log('ok!');
-	console.log(await gitPush());
-	//process.exit(0);
+	await PCUST();
+	await SSTOCK();
+	await SORDDT();
+	console.log('db ok!');
+	gitPush();
+        console.log('push ok!');
+	process.exit(0);
 }
 run();

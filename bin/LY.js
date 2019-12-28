@@ -149,6 +149,8 @@ async function run (){
 	console.log('db ok!');
 	gitPush();
         console.log('push ok!');
+	await gitRemotePull();
+        console.log('pull ok!');
 	process.exit(0);
 }
 run();

@@ -1,4 +1,4 @@
-const spawn = require('spawn');
+const spawn = require('cross-spawn');
 module.exports = {   
 	gitPush: async function(req, res, next) {
 		spawn.sync('git', ['status'], { stdio: 'inherit' });

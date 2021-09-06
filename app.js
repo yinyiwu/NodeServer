@@ -15,6 +15,7 @@ var customer = require('./service/customer');
 var sync = require('./service/sync');
 var product = require('./service/product');
 var { gitPush:datapull } = require('./service/datapull');
+const { UploadImages, DownloadExcel} = require('./service/ocr');
 
 //generic express stuff
 var app = express();
@@ -65,12 +66,29 @@ app.get('/DataPull', datapull);
 
 
 
+const multer  = require('multer')
+const upload = multer();
+app.post('/Ocr/Order/UploadImages', upload.array('photos', 50), UploadImages);
+app.get('/Ocr/Order/DownloadExcel', DownloadExcel);
+
+
+
+
 //app.post('/BarCode/Create/Item', barCodeItem.create);
 
 
 //app.get('/BarCode/Create/Mapping/Item/:code', barCodeItem.get);
 
-//view 
+//view
+app.get('/upload', function(req, res) {
+    res.sendFile('/upload.html', { root: __dirname });
+});
+
+app.get('/photosTemp/*', function(req, res) {
+    console.log(req);
+    res.sendFile(req.originalUrl, { root: __dirname });
+});
+
 app.get('/dist/*', function(req, res) {
     res.sendFile('/dist/bundle.js', { root: __dirname });
 });

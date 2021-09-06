@@ -14,7 +14,6 @@
         "mssql": "*",
         "mysql": "*",
         "sqlite3": "*",
-        "squel": "*",
         "body-parser": "*",
         "nedb-promise": "*",
         "xlsx": "*",
@@ -25,7 +24,9 @@
         "vue-i18n": "*",
         "vue-resource": "*",
         "cross-spawn": "*",
-        "axios": "*"
+        "axios": "*",
+        "multer": "1.4.3",
+        "jimp": "0.16.1"
     },
     "devDependencies": {
         "babel-core": "^6.17.0",

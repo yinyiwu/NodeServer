@@ -19,7 +19,7 @@
         "xlsx": "*",
         "underscore": "*",
         "moment": "*",
-        "jszip": "2.4.0",
+        "jszip": "3.7.0",
         "vue": "^2.0.1",
         "vue-i18n": "*",
         "vue-resource": "*",

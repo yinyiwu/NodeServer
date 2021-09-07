@@ -20,7 +20,7 @@ schedule.scheduleJob('* * * * *', async function(){
     const keys = [];
     do {
       j++;
-      target = ws['D'+j];
+      target = ws['H'+j];
       if(target){
         const l = target.v.split('/');
         keys.push(l[l.length-1]);
@@ -59,7 +59,7 @@ schedule.scheduleJob('* * * * *', async function(){
     let j =0;
     do {
       j++;
-      target = ws['D'+j];
+      target = ws['H'+j];
       if(target){
         target.l = { Target:target.v, Tooltip:"link to image" };
       }

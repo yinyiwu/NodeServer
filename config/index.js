@@ -10,7 +10,7 @@ const config = {
     language: 'en',
     server: {
       host: 'http://127.0.0.1',
-      port: 80,
+      port: 8081,
     },
   },
   cdnConfig: {},

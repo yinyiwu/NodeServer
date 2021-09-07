@@ -1,5 +1,5 @@
 const XLSX = require('xlsx');
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('../db');
 const moment = require('moment');
 const fs = require('fs');
@@ -31,7 +31,7 @@ module.exports = {
                 OD_CTNO: cno
             });
 
-            let sd = _.indexBy(sorddt, 'OD_SKNO');
+            let sd = _.keyBy(sorddt, 'OD_SKNO');
 
             let sstock = await db.sstock.find({}, {
                 _id: 0
@@ -80,7 +80,7 @@ module.exports = {
 
             let result = _.values(t);
 
-            let indexData = _.indexBy(data, 'SK_NO');
+            let indexData = _.keyBy(data, 'SK_NO');
 
             let ret = _.reduce(result, (sum, value, key) => {
                 let v = indexData[value['SK_NO']];
@@ -259,7 +259,7 @@ module.exports = {
             };
 
             let customers = await db.pcust.find({});
-            let customersIdx = _.indexBy(customers, 'CT_NO');
+            let customersIdx = _.keyBy(customers, 'CT_NO');
 
             function fixSheetName(code) {
                 let customer = customersIdx[code];
@@ -362,7 +362,7 @@ module.exports = {
                             attrs: {
                                 editAs: 'oneCell'
                             },
-                            from: {
+       XLSX.writeFile(wb, fileName);                     from: {
                                 col: 6,
                                 row: 1
                             },
@@ -377,7 +377,7 @@ module.exports = {
 
             });
             let fileName = "./temp/" + new Date().getTime() + '.xlsx';
-            XLSX.writeFile(wb, fileName);
+
             res.download(fileName);
         } catch (e) {
             res.status(500).send(e);

@@ -135,7 +135,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     return { jimp, cutL, cutR };
   }
 
-  const fileFilter = files.filter(filterFn).filter;
+  const fileFilter = files.filter(filterFn).filter((file, idx)=>idx<21);
   const images = await Promise.all(fileFilter.map(async (path) => {
     // const bitmap = fs.readFileSync(`./yangyi/${path}`);
     // const jimp = await Jimp.read(`./yangyi/${path}`);

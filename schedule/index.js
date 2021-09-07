@@ -135,7 +135,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     return { jimp, cutL, cutR };
   }
 
-  const fileFilter = files.filter(filterFn);
+  const fileFilter = files.filter(filterFn).filter;
   const images = await Promise.all(fileFilter.map(async (path) => {
     // const bitmap = fs.readFileSync(`./yangyi/${path}`);
     // const jimp = await Jimp.read(`./yangyi/${path}`);
@@ -284,16 +284,20 @@ function regexpSplit(json, filesPath) {
   for (const text of description) {
     if (/\d{3}-\d{3}-\d{4}/.test(text)) {
       obj = {
-        code: text,
-        name: '',
-        phone: '',
-        imageUrl: filesPath[i++]
+        '場次': text.replace(/\-/g,''),
+        '更改日期':'',
+        '托運單號':'',
+        '收件人姓名':'',
+        '電話':'',
+        '更改前件數':1,
+        '更改件數':'',
+        '原圖':filesPath[i++],
       }
       ary.push(obj);
     } else if (/[(]?(\S|\W)+[);》]?/.test(text) && obj.name === '' && (text.includes('(') || text.includes(')'))) {
-      obj.name = text.replace(";", ")").replace("》", ")");
+      obj['收件人姓名'] = text.replace(";", ")").replace("》", ")");
     } else if (/^([0]{1})(\d){8}(\d{1})$/.test(text) || /^(\d){7,8}(\d{1})$/.test(text) && obj.phone === '') {
-      obj.phone = text;
+      obj['電話'] = text;
     }
   }
 

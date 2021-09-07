@@ -32,8 +32,11 @@ export default {
   },
   async mounted() {
     const data = await getDailyOrder();
-    console.log('a', data);
     this.dailyOrder = data;
+    setInterval(()=>{
+      const data = await getDailyOrder();
+      this.dailyOrder = data;
+    },30000);
   },
   methods: {
   }

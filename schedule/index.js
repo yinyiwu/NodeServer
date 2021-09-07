@@ -53,7 +53,7 @@ schedule.scheduleJob('* * * * *', async function(){
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR);
     console.log('insert', files);
     const result = await visonAPI(base64String);
-    const json =  regexpSplit(result, files.map(file=>file.replace(ROOT_DIR, `http://35.206.254.19/service/${ROOT_DIR.replace('./','')}`)));
+    const json =  regexpSplit(result, files.map(file=>file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./','')}`)));
     const ws = XLSX.utils.json_to_sheet(json);
     let target;
     let j =0;

@@ -33,7 +33,7 @@ export default {
   async mounted() {
     const data = await getDailyOrder();
     this.dailyOrder = data;
-    setInterval(()=>{
+    setInterval(async ()=>{
       const data = await getDailyOrder();
       this.dailyOrder = data;
     },30000);

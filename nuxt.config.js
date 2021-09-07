@@ -196,7 +196,9 @@ let baseConfig = {
         }
       }
     },
-    plugins: [ new SpriteLoaderPlugin() ],
+    plugins: [
+      new SpriteLoaderPlugin()
+    ],
     /*
      ** You can extend webpack config here
      */
@@ -224,7 +226,7 @@ let baseConfig = {
         }
       });
 
-      // FIXME 
+      // FIXME
       // 要設定 svg-sprite-loader 需 url-loader exclude svg path
       // set url-loader exclude
       config.module.rules[11].exclude = `${rootPath}/src/assets/icons`;
@@ -271,6 +273,6 @@ if (systemConfig.isDebugger) {
   });
 }
 
-let assignConfig = isDev ? devConfig : prodConfig;
+// let assignConfig = isDev ? devConfig : prodConfig;
 
-module.exports = generateConfig(baseConfig, assignConfig);
+module.exports = generateConfig(baseConfig, devConfig);

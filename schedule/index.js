@@ -284,9 +284,9 @@ function regexpSplit(json, filesPath) {
   for (const text of description) {
     if (/\d{3}-\d{3}-\d{4}/.test(text)) {
       obj = {
-        '場次': text.replace(/\-/g,''),
+        '場次': '',
         '更改日期':'',
-        '托運單號':'',
+        '托運單號': text.replace(/\-/g,''),
         '收件人姓名':'',
         '電話':'',
         '更改前件數':1,
@@ -294,9 +294,9 @@ function regexpSplit(json, filesPath) {
         '原圖':filesPath[i++],
       }
       ary.push(obj);
-    } else if (/[(]?(\S|\W)+[);》]?/.test(text) && obj.name === '' && (text.includes('(') || text.includes(')'))) {
+    } else if (/[(]?(\S|\W)+[);》]?/.test(text) && obj['收件人姓名'] === '' && (text.includes('(') || text.includes(')'))) {
       obj['收件人姓名'] = text.replace(";", ")").replace("》", ")");
-    } else if (/^([0]{1})(\d){8}(\d{1})$/.test(text) || /^(\d){7,8}(\d{1})$/.test(text) && obj.phone === '') {
+    } else if (/^([0]{1})(\d){8}(\d{1})$/.test(text) || /^(\d){7,8}(\d{1})$/.test(text) && obj['電話'] === '') {
       obj['電話'] = text;
     }
   }

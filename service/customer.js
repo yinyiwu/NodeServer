@@ -3,6 +3,8 @@ const _ = require('lodash');
 const db = require('../db');
 const moment = require('moment');
 const fs = require('fs');
+const { Readable } = require('stream');
+
 
 module.exports = {
     orderList: async function(req, res, next) {
@@ -376,9 +378,14 @@ module.exports = {
 
 
             });
-            let fileName = "./temp/" + new Date().getTime() + '.xlsx';
-
-            res.download(fileName);
+            const buffer = XLSX.write(wb,{
+                type:'buffer',
+                bookType:'xlsx',
+              })
+              res.setHeader(`Content-disposition', 'attachment; filename=${moment().format('YYYY/MM/DD')}.xlsx`);
+              res.setHeader('Content-type', 'doument/xlsx');
+              const stream = Readable.from(buffer);
+              stream.pipe(res);
         } catch (e) {
             res.status(500).send(e);
         }

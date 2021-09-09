@@ -236,7 +236,6 @@ module.exports = {
     orderToExcle: async function(req, res, next) {
         let start = req.params.start;
         let end = req.params.end;
-        // res.set("fileName", moment(start).format('YYYYMMDD'));
         try {
             let dataSet = await db.items.cfind({
                     $and: [{
@@ -382,10 +381,10 @@ module.exports = {
                 type:'buffer',
                 bookType:'xlsx',
               })
-              res.setHeader(`Content-disposition', 'attachment; filename=${moment(start).format('YYYYMMDD')}.xlsx`);
-              res.setHeader('Content-type', 'doument/xlsx');
-              const stream = Readable.from(buffer);
-              stream.pipe(res);
+            res.setHeader('Content-disposition', `attachment; filename=${moment(start).format('YYYYMMDD')}.xlsx`);
+            res.setHeader('Content-type', 'doument/xlsx');
+            const stream = Readable.from(buffer);
+            stream.pipe(res);
         } catch (e) {
             res.status(500).send(e);
         }

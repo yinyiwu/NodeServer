@@ -42,7 +42,7 @@ module.exports = {
       bookType:'xlsx',
     })
     res.setHeader(`Content-disposition', 'attachment; filename=${moment().format('YYYY/MM/DD')}.xlsx`);
-    res.setHeader('Content-type', 'doument/xlsx');
+    res.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     const stream = Readable.from(buffer);
     stream.pipe(res);
   }

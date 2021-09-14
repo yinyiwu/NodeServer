@@ -377,12 +377,13 @@ module.exports = {
 
 
             });
+            console.log(wb.Sheets);
             const buffer = XLSX.write(wb,{
                 type:'buffer',
                 bookType:'xlsx',
               })
             res.setHeader('Content-disposition', `attachment; filename=${moment(start).format('YYYYMMDD')}.xlsx`);
-            res.setHeader('Content-type', 'doument/xlsx');
+            res.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             const stream = Readable.from(buffer);
             stream.pipe(res);
         } catch (e) {

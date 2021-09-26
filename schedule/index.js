@@ -45,7 +45,8 @@ const jobFn = async function () {
         target = ws['H' + j];
         if (target) {
           target.l = { Target: target.v, Tooltip: "link to image" };
-          target.v = '原圖連結';
+          const l = target.v.split('/');
+          target.v = l[l.length - 1];
         }
       } while (target);
       await XLSX.writeFile({
@@ -69,7 +70,8 @@ const jobFn = async function () {
       target = ws['H' + j];
       if (target) {
         target.l = { Target: target.v, Tooltip: "link to image" };
-        target.v = '原圖連結';
+        const l = target.v.split('/');
+        target.v = l[l.length - 1];
       }
     } while (target);
     await XLSX.writeFile({

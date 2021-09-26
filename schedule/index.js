@@ -96,7 +96,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     for (let i = 5; i < 100; i++) {
       const v = await jimp.getPixelColor(i, jimp.getHeight() / 1.5);
       const { r, g, b } = Jimp.intToRGBA(v);
-      console.log(path, i, Jimp.intToRGBA(v));
+      // console.log(path, i, Jimp.intToRGBA(v));
       if (r <= 115 && g <= 126 && b <= 123) {
         // console.log(path, i, Jimp.intToRGBA(v));
         cutL = i;

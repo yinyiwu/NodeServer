@@ -34,53 +34,54 @@ const jobFn = async function () {
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR, (file) => !keys.includes(file));
     if (files.length > 0) {
       console.log('update', files);
-      const result = await visonAPI(base64String);
-      const json = XLSX.utils.sheet_to_json(ws);
-      const json_tmp = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
-      json.push(...json_tmp);
-      ws = await XLSX.utils.json_to_sheet(json);
-      j = 0;
-      do {
-        j++;
-        target = ws['H' + j];
-        if (target) {
-          target.l = { Target: target.v, Tooltip: "link to image" };
-          target.v = '原圖連結';
-        }
-      } while (target);
-      await XLSX.writeFile({
-        SheetNames: ['order'],
-        Sheets: {
-          'order': ws
-        }
-      }, filePath);
+      // const result = await visonAPI(base64String);
+      // const json = XLSX.utils.sheet_to_json(ws);
+      // const json_tmp = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
+      // json.push(...json_tmp);
+      // ws = await XLSX.utils.json_to_sheet(json);
+      // j = 0;
+      // do {
+      //   j++;
+      //   target = ws['H' + j];
+      //   if (target) {
+      //     target.l = { Target: target.v, Tooltip: "link to image" };
+      //     target.v = '原圖連結';
+      //   }
+      // } while (target);
+      // await XLSX.writeFile({
+      //   SheetNames: ['order'],
+      //   Sheets: {
+      //     'order': ws
+      //   }
+      // }, filePath);
     }
   } else {
 
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR);
     console.log('insert', files);
-    const result = await visonAPI(base64String);
-    const json = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
-    const ws = XLSX.utils.json_to_sheet(json);
-    let target;
-    let j = 0;
-    do {
-      j++;
-      target = ws['H' + j];
-      if (target) {
-        target.l = { Target: target.v, Tooltip: "link to image" };
-        target.v = '原圖連結';
-      }
-    } while (target);
-    await XLSX.writeFile({
-      SheetNames: ['order'],
-      Sheets: {
-        'order': ws
-      }
-    }, filePath);
+  //   const result = await visonAPI(base64String);
+  //   const json = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
+  //   const ws = XLSX.utils.json_to_sheet(json);
+  //   let target;
+  //   let j = 0;
+  //   do {
+  //     j++;
+  //     target = ws['H' + j];
+  //     if (target) {
+  //       target.l = { Target: target.v, Tooltip: "link to image" };
+  //       target.v = '原圖連結';
+  //     }
+  //   } while (target);
+  //   await XLSX.writeFile({
+  //     SheetNames: ['order'],
+  //     Sheets: {
+  //       'order': ws
+  //     }
+  //   }, filePath);
   }
   console.log('job complete!');
 };
+// jobFn();
 schedule.scheduleJob('* * * * *', jobFn);
 // const watcher = fs.watch(ROOT_DIR, { recursive: true });
 // watcher.on('change', () => {
@@ -132,17 +133,24 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     try {
       //去邊距
       const { jimp, cutL: cX, cutR } = await cutX(path);
-      await jimp.crop(cX, 0, cutR, jimp.getHeight() / 1.9);
+      const jimp2 = jimp.clone();
 
-      await jimp.crop(0, jimp.getHeight() / 2, jimp.getWidth(), jimp.getHeight() / 2);
+      // await jimp.crop(cX, 0, cutR, jimp.getHeight() * 0.526);
 
-      await jimp.crop(0, Math.floor(jimp.getHeight() / 4 * 3) + 1, jimp.getWidth() / 1.4, Math.floor(jimp.getHeight() / 4) - 1);
-      // await jimp.write(`${destPath}/${path.replace('.jpg', 'A.jpg')}`);
+      // await jimp.crop(0, jimp.getHeight() / 2, jimp.getWidth(), jimp.getHeight() / 2);
+
+      // console.log(jimp.getWidth(), jimp.getHeight(), 0, Math.floor(jimp.getHeight() / 4 * 3) + 1, Math.floor(jimp.getWidth() / 1.4), Math.floor(jimp.getHeight() / 4) - 1);
+      // await jimp.crop(0, Math.floor(jimp.getHeight() / 4 * 3) + 1, Math.floor(jimp.getWidth() / 1.4), Math.floor(jimp.getHeight() / 4) - 2);
+
+      // console.log(0, Math.floor(jimp.getHeight() * 0.526) - 50, Math.floor(jimp.getWidth() / 1.4), 50);
+      await jimp.crop(0, Math.floor(jimp.getHeight() * 0.526) -80, Math.floor(jimp.getWidth() * 0.714), 80);
+
+      await jimp.write(`${destPath}/${path.replace('.jpg', 'A.jpg')}`);
 
 
-      const jimp2 = await Jimp.read(`${sourcePath}/${path}`);
-      await jimp2.crop(cX, jimp2.getHeight() / 1.9, (jimp2.getWidth()), jimp2.getHeight() / 4.5);
-      // await jimp2.write(`${destPath}/${path.replace('.jpg', 'B.jpg')}`);
+      // const jimp2 = await Jimp.read(`${sourcePath}/${path}`);
+      await jimp2.crop(cX, jimp2.getHeight() * 0.526, (jimp2.getWidth()), jimp2.getHeight() * 0.222);
+      await jimp2.write(`${destPath}/${path.replace('.jpg', 'B.jpg')}`);
       const W = jimp.getWidth();
       const H = jimp.getHeight() + jimp2.getHeight();
 
@@ -157,7 +165,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
       await jimpCombo.invert();
       await jimpCombo.scale(0.6);
 
-      // await jimpCombo.write(`${destPath}/${path.replace('.jpg', 'F.jpg')}`);
+      await jimpCombo.write(`${destPath}/${path.replace('.jpg', 'F.jpg')}`);
       return jimpCombo;
     } catch (e) {
       console.error(path);

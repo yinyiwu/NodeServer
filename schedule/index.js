@@ -36,7 +36,7 @@ const jobFn = async function(){
       console.log('update', files);
       const result = await visonAPI(base64String);
       const json =  XLSX.utils.sheet_to_json(ws);
-      const json_tmp = regexpSplit(result, files.map(file=>file.replace(ROOT_DIR, `http://35.206.254.19/service/${ROOT_DIR}`)));
+      const json_tmp = regexpSplit(result, files.map(file=>file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./','')}`)));
       json.push(...json_tmp);
       ws = await XLSX.utils.json_to_sheet(json);
       j =0;

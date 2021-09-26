@@ -34,50 +34,50 @@ const jobFn = async function () {
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR, (file) => !keys.includes(file));
     if (files.length > 0) {
       console.log('update', files);
-      // const result = await visonAPI(base64String);
-      // const json = XLSX.utils.sheet_to_json(ws);
-      // const json_tmp = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
-      // json.push(...json_tmp);
-      // ws = await XLSX.utils.json_to_sheet(json);
-      // j = 0;
-      // do {
-      //   j++;
-      //   target = ws['H' + j];
-      //   if (target) {
-      //     target.l = { Target: target.v, Tooltip: "link to image" };
-      //     target.v = '原圖連結';
-      //   }
-      // } while (target);
-      // await XLSX.writeFile({
-      //   SheetNames: ['order'],
-      //   Sheets: {
-      //     'order': ws
-      //   }
-      // }, filePath);
+      const result = await visonAPI(base64String);
+      const json = XLSX.utils.sheet_to_json(ws);
+      const json_tmp = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
+      json.push(...json_tmp);
+      ws = await XLSX.utils.json_to_sheet(json);
+      j = 0;
+      do {
+        j++;
+        target = ws['H' + j];
+        if (target) {
+          target.l = { Target: target.v, Tooltip: "link to image" };
+          target.v = '原圖連結';
+        }
+      } while (target);
+      await XLSX.writeFile({
+        SheetNames: ['order'],
+        Sheets: {
+          'order': ws
+        }
+      }, filePath);
     }
   } else {
 
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR);
     console.log('insert', files);
-  //   const result = await visonAPI(base64String);
-  //   const json = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
-  //   const ws = XLSX.utils.json_to_sheet(json);
-  //   let target;
-  //   let j = 0;
-  //   do {
-  //     j++;
-  //     target = ws['H' + j];
-  //     if (target) {
-  //       target.l = { Target: target.v, Tooltip: "link to image" };
-  //       target.v = '原圖連結';
-  //     }
-  //   } while (target);
-  //   await XLSX.writeFile({
-  //     SheetNames: ['order'],
-  //     Sheets: {
-  //       'order': ws
-  //     }
-  //   }, filePath);
+    const result = await visonAPI(base64String);
+    const json = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
+    const ws = XLSX.utils.json_to_sheet(json);
+    let target;
+    let j = 0;
+    do {
+      j++;
+      target = ws['H' + j];
+      if (target) {
+        target.l = { Target: target.v, Tooltip: "link to image" };
+        target.v = '原圖連結';
+      }
+    } while (target);
+    await XLSX.writeFile({
+      SheetNames: ['order'],
+      Sheets: {
+        'order': ws
+      }
+    }, filePath);
   }
   console.log('job complete!');
 };
@@ -104,7 +104,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
       if (!diffLine) {
         diffLine = r + g + b;
       }
-      console.log(path, i, Jimp.intToRGBA(v), diffLine - r - g - b);
+      // console.log(path, i, Jimp.intToRGBA(v), diffLine - r - g - b);
       if ((r <= 115 && g <= 126 && b <= 123) || (diffLine - r - g - b > 150)) {
         // console.log(path, i, Jimp.intToRGBA(v));
         cutL = i;

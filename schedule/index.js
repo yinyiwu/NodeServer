@@ -130,12 +130,12 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     await jimp.crop(0, jimp.getHeight() / 2, jimp.getWidth(), jimp.getHeight() / 2);
 
     await jimp.crop(0, Math.floor(jimp.getHeight() / 4 * 3) + 1, jimp.getWidth() / 1.4, Math.floor(jimp.getHeight() / 4) -1 );
-    await jimp.write(`${destPath}/${path.replace('.jpg', 'A.jpg')}`);
+    // await jimp.write(`${destPath}/${path.replace('.jpg', 'A.jpg')}`);
 
 
     const jimp2 = await Jimp.read(`${sourcePath}/${path}`);
     await jimp2.crop(cX, jimp2.getHeight() / 1.9, (jimp2.getWidth()), jimp2.getHeight() / 4.5);
-    await jimp2.write(`${destPath}/${path.replace('.jpg', 'B.jpg')}`);
+    // await jimp2.write(`${destPath}/${path.replace('.jpg', 'B.jpg')}`);
     const W = jimp.getWidth();
     const H = jimp.getHeight() + jimp2.getHeight();
 
@@ -150,7 +150,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     await jimpCombo.invert();
     await jimpCombo.scale(0.6);
 
-    await jimpCombo.write(`${destPath}/${path.replace('.jpg', 'F.jpg')}`);
+    // await jimpCombo.write(`${destPath}/${path.replace('.jpg', 'F.jpg')}`);
     return jimpCombo;
   }));
 

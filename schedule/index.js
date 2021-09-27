@@ -5,6 +5,7 @@ const FINISH_DIR = `./photosFinish`;
 const XLSX = require('xlsx');
 const Jimp = require('jimp');
 const axios = require('axios');
+const DEBUG = true;
 
 
 const jobFn = async function () {
@@ -36,19 +37,24 @@ const jobFn = async function () {
       console.log('update', files);
       const result = await visonAPI(base64String);
       const json = XLSX.utils.sheet_to_json(ws);
-      const json_tmp = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
+      const json_tmp = regexpSplit(result, files.map(file => {
+        const l = file.split('/');
+        return l[l.length - 1];
+      }));
       json.push(...json_tmp);
       ws = await XLSX.utils.json_to_sheet(json);
-      j = 0;
+      j = 1;
       do {
         j++;
         target = ws['H' + j];
-        if (target) {
-          target.l = { Target: target.v, Tooltip: "link to image" };
-          const l = target.v.split('/');
-          target.v = l[l.length - 1];
+        if (target && target.v!='原圖') {
+          target.l = {
+            Target: `http://35.206.254.19:8080/${ROOT_DIR.replace('./','')}/${dir}/${target.v}`,
+            Tooltip: "link to image"
+          };
         }
       } while (target);
+
       await XLSX.writeFile({
         SheetNames: ['order'],
         Sheets: {
@@ -61,17 +67,21 @@ const jobFn = async function () {
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR);
     console.log('insert', files);
     const result = await visonAPI(base64String);
-    const json = regexpSplit(result, files.map(file => file.replace(ROOT_DIR, `http://35.206.254.19:8080/${ROOT_DIR.replace('./', '')}`)));
+    const json = regexpSplit(result, files.map(file => {
+      const l = file.split('/');
+      return l[l.length - 1];
+    }));
     const ws = XLSX.utils.json_to_sheet(json);
     let target;
-    let j = 0;
+    let j = 1;
     do {
       j++;
       target = ws['H' + j];
-      if (target) {
-        target.l = { Target: target.v, Tooltip: "link to image" };
-        const l = target.v.split('/');
-        target.v = l[l.length - 1];
+      if (target && target.v!='原圖') {
+        target.l = {
+          Target: `http://35.206.254.19:8080/${ROOT_DIR.replace('./','')}/${dir}/${target.v}`,
+          Tooltip: "link to image"
+        };
       }
     } while (target);
     await XLSX.writeFile({
@@ -83,8 +93,8 @@ const jobFn = async function () {
   }
   console.log('job complete!');
 };
-// jobFn();
-schedule.scheduleJob('* * * * *', jobFn);
+jobFn();
+// schedule.scheduleJob('* * * * *', jobFn);
 // const watcher = fs.watch(ROOT_DIR, { recursive: true });
 // watcher.on('change', () => {
 
@@ -145,7 +155,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
       // await jimp.crop(0, Math.floor(jimp.getHeight() / 4 * 3) + 1, Math.floor(jimp.getWidth() / 1.4), Math.floor(jimp.getHeight() / 4) - 2);
 
       // console.log(0, Math.floor(jimp.getHeight() * 0.526) - 50, Math.floor(jimp.getWidth() / 1.4), 50);
-      await jimp.crop(0, Math.floor(jimp.getHeight() * 0.526) -80, Math.floor(jimp.getWidth() * 0.714), 80);
+      await jimp.crop(0, Math.floor(jimp.getHeight() * 0.526) - 80, Math.floor(jimp.getWidth() * 0.714), 80);
 
       // await jimp.write(`${destPath}/${path.replace('.jpg', 'A.jpg')}`);
 
@@ -188,7 +198,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     h += jimp.getHeight();
   }
 
-  await docJimp.write(`${FINISH_DIR}/F.jpg`);
+  // await docJimp.write(`${FINISH_DIR}/F.jpg`);
   const v1 = await docJimp.getBase64Async(Jimp.MIME_JPEG);
 
   return { files: fileFilter.map(file => `${sourcePath}/${file}`), base64String: v1.replace('data:image/jpeg;base64,', '') };

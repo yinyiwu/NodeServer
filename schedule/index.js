@@ -28,8 +28,7 @@ const jobFn = async function () {
       j++;
       target = ws['H' + j];
       if (target) {
-        const l = target.v.split('/');
-        keys.push(l[l.length - 1]);
+        keys.push(target.v);
       }
     } while (target);
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR, (file) => !keys.includes(file));
@@ -140,7 +139,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     return { jimp, cutL, cutR };
   }
 
-  const fileFilter = files.filter((file) => file.endsWith('.jpg')).filter(filterFn).filter((file, idx) => idx < 21);
+  const fileFilter = files.filter((file) => file.endsWith('.jpg')).filter(filterFn).filter((file, idx) => idx < 20);
   const images = await Promise.all(fileFilter.map(async (path) => {
     try {
       //去邊距

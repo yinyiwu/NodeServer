@@ -73,7 +73,7 @@ const jobFn = async function () {
     }));
     const ws = XLSX.utils.json_to_sheet(json);
     let target;
-    let j = 1;
+    let j = 0;
     do {
       j++;
       target = ws['H' + j];

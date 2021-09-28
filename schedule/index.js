@@ -93,8 +93,8 @@ const jobFn = async function () {
   }
   console.log('job complete!');
 };
-jobFn();
-// schedule.scheduleJob('* * * * *', jobFn);
+// jobFn();
+schedule.scheduleJob('* * * * *', jobFn);
 // const watcher = fs.watch(ROOT_DIR, { recursive: true });
 // watcher.on('change', () => {
 

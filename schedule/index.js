@@ -92,8 +92,8 @@ const jobFn = async function () {
   }
   console.log('job complete!');
 };
-// jobFn();
-schedule.scheduleJob('* * * * *', jobFn);
+jobFn();
+// schedule.scheduleJob('* * * * *', jobFn);
 // const watcher = fs.watch(ROOT_DIR, { recursive: true });
 // watcher.on('change', () => {
 
@@ -139,7 +139,8 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     return { jimp, cutL, cutR };
   }
 
-  const fileFilter = files.filter((file) => file.endsWith('.jpg')).filter(filterFn).filter((file, idx) => idx < 20);
+  const fileFilter = files.filter((file) => file.endsWith('.jpg')||file.endsWith('.JPG')||file.endsWith('.jpeg')||file.endsWith('.JPEG'))
+  .filter(filterFn).filter((file, idx) => idx < 20);
   const images = await Promise.all(fileFilter.map(async (path) => {
     try {
       //去邊距
@@ -176,7 +177,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
       await jimpCombo.invert();
       await jimpCombo.scale(0.6);
 
-      // await jimpCombo.write(`${destPath}/${path.replace('.jpg', 'F.jpg')}`);
+      await jimpCombo.write(`${destPath}/${path.replace('.jpg', 'F.jpg')}`);
       return jimpCombo;
     } catch (e) {
       console.error(path);

@@ -185,7 +185,7 @@ async function quickstart(sourcePath, destPath, filterFn = (file, idx) => {
     h += jimp.getHeight();
   }
 
-  await docJimp.write(`${FINISH_DIR}/F.jpg`);
+  // await docJimp.write(`${FINISH_DIR}/F.jpg`);
   const v1 = await docJimp.getBase64Async(Jimp.MIME_JPEG);
 
   return { files: fileFilter.map(file => `${sourcePath}/${file}`), base64String: v1.replace('data:image/jpeg;base64,', '') };

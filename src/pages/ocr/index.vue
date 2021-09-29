@@ -21,7 +21,8 @@
         el-table-column(prop='key', label='時間', width='180', sortable)
         el-table-column(prop='fileName', label='下載', width='180')
           span(slot-scope='scope')
-            a( style='color:red' :href='`service/photosFinish/${scope.row.fileName}`')  下載
+            a( v-if="scope.row.percent>=100" style='color:red' :href='`service/photosFinish/${scope.row.fileName}`')  下載
+            el-progress( v-else :percentage='scope.row.percent' )
 </template>
 
 <script>

@@ -23,13 +23,33 @@ module.exports = {
     }
   },
   GetDailyOCRList: async function(req, res, next){
-    const dir = fs.readdirSync(FINISH_DIR);
-    res.json({
-      data:dir.map((file)=>({
-        key: file.replace('.xlsx', ''),
-        fileName: file
-      }))
-    });
+    const dir = fs.readdirSync(FINISH_DIR).filter(file=>file.endsWith('.xlsx'));
+    if(dir.length > 0){
+      const lastFile = dir[dir.length-1];
+      const wb = await XLSX.readFile(`${FINISH_DIR}/${lastFile}`);
+      const files = fs.readdirSync(`${ROOT_DIR}/${lastFile.replace('.xlsx','')}`).filter(file=>file.endsWith('.jpg'));
+      console.log(files);
+      res.json({
+        data:dir.map((file)=>{
+          let percent = 100;
+          if(file === lastFile){
+            let ws = wb.Sheets.order;
+            const ref = ws['!ref'].split(':');
+            let len = Number(ref[ref.length-1].replace('H',''));
+            percent = Math.floor(len*100/files.length);
+          }
+          return {
+            key: file.replace('.xlsx', ''),
+            fileName: file,
+            percent,
+          }
+        })
+      });
+    } else {
+      res.json({
+        data:[]
+      });
+    }
   },
   DownloadExcel: async function (req, res, next) {
     const buffer = XLSX.write({

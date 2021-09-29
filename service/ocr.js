@@ -24,7 +24,26 @@ module.exports = {
   },
   GetDailyOCRList: async function(req, res, next){
     const dir = fs.readdirSync(FINISH_DIR).filter(file=>file.endsWith('.xlsx'));
-    if(dir.length > 0){
+    const dirTemp = fs.readdirSync(ROOT_DIR).filter(file=>/\d{4}-\d{2}-\d{2}/.test(file));
+    if(dirTemp.length > dir.length){
+      const data = dir.map((file)=>{
+        let percent = 100;
+        return {
+          key: file.replace('.xlsx', ''),
+          fileName: file,
+          percent,
+        }
+      });
+      const temp = dirTemp[dirTemp.length-1];
+      data.push({
+        key: temp,
+        fileName: `${temp}.xlsx`,
+        percent:0
+      })
+      res.json({
+        data
+      });
+    } else if(dir.length > 0){
       const lastFile = dir[dir.length-1];
       const wb = await XLSX.readFile(`${FINISH_DIR}/${lastFile}`);
       const files = fs.readdirSync(`${ROOT_DIR}/${lastFile.replace('.xlsx','')}`).filter(file=>file.endsWith('.jpg')||file.endsWith('.JPG')||file.endsWith('.jpeg')||file.endsWith('.JPEG'));

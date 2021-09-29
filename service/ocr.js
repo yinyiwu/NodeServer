@@ -27,7 +27,7 @@ module.exports = {
     if(dir.length > 0){
       const lastFile = dir[dir.length-1];
       const wb = await XLSX.readFile(`${FINISH_DIR}/${lastFile}`);
-      const files = fs.readdirSync(`${ROOT_DIR}/${lastFile.replace('.xlsx','')}`).filter(file=>file.endsWith('.jpg'));
+      const files = fs.readdirSync(`${ROOT_DIR}/${lastFile.replace('.xlsx','')}`).filter(file=>file.endsWith('.jpg')||file.endsWith('.JPG')||file.endsWith('.jpeg')||file.endsWith('.JPEG'));
       console.log(files);
       res.json({
         data:dir.map((file)=>{

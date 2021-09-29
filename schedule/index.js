@@ -246,7 +246,7 @@ function regexpSplit(json, filesPath) {
       ary.push(obj);
     } else if (/[(]?(\S|\W)+[);》]?/.test(text) && obj['收件人姓名'] === '' && (text.includes('(') || text.includes(')'))) {
       obj['收件人姓名'] = text.replace(";", ")").replace("》", ")");
-    } else if (/^([0]{1})(\d){8}(\d{1})$/.test(text) || /^(\d){7,8}(\d{1})$/.test(text) || /^([0]{1})(\d){18}}(\d{1})$/.test(text) && obj['電話'] === '') {
+    } else if (/^([0]{1})(\d){8}(\d{1})$/.test(text) || /^(\d){7,8}(\d{1})$/.test(text) || /^([0]{1})(\d){18}(\d{1})$/.test(text) && obj['電話'] === '') {
       obj['電話'] = text;
     }
   }

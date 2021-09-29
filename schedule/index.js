@@ -65,30 +65,30 @@ const jobFn = async function () {
 
     const { files, base64String } = await quickstart(`${ROOT_DIR}/${dir}`, FINISH_DIR);
     console.log('insert', files);
-    // const result = await visonAPI(base64String);
-    // const json = regexpSplit(result, files.map(file => {
-    //   const l = file.split('/');
-    //   return l[l.length - 1];
-    // }));
-    // const ws = XLSX.utils.json_to_sheet(json);
-    // let target;
-    // let j = 0;
-    // do {
-    //   j++;
-    //   target = ws['H' + j];
-    //   if (target && target.v!='原圖') {
-    //     target.l = {
-    //       Target: `http://35.206.254.19:8080/${ROOT_DIR.replace('./','')}/${dir}/${target.v}`,
-    //       Tooltip: "link to image"
-    //     };
-    //   }
-    // } while (target);
-    // await XLSX.writeFile({
-    //   SheetNames: ['order'],
-    //   Sheets: {
-    //     'order': ws
-    //   }
-    // }, filePath);
+    const result = await visonAPI(base64String);
+    const json = regexpSplit(result, files.map(file => {
+      const l = file.split('/');
+      return l[l.length - 1];
+    }));
+    const ws = XLSX.utils.json_to_sheet(json);
+    let target;
+    let j = 0;
+    do {
+      j++;
+      target = ws['H' + j];
+      if (target && target.v!='原圖') {
+        target.l = {
+          Target: `http://35.206.254.19:8080/${ROOT_DIR.replace('./','')}/${dir}/${target.v}`,
+          Tooltip: "link to image"
+        };
+      }
+    } while (target);
+    await XLSX.writeFile({
+      SheetNames: ['order'],
+      Sheets: {
+        'order': ws
+      }
+    }, filePath);
   }
   console.log('job complete!');
 };

@@ -44,7 +44,7 @@
     "vue-i18n-extensions": "0.2.0",
     "webpack": "4.35.3",
     "webpack-cli": "3.3.5",
-    "express": "4.17.1",
+    "express": "4.17.3",
     "axios": "*",
     "xlsx": "*",
     "morgan": "*",

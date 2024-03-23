@@ -7,9 +7,9 @@ const Jimp = require('jimp');
 const axios = require('axios');
 const DEBUG = true;
 
-
+let visionAPICount = 0;
 const jobFn = async function () {
-  console.log('ocr job running!');
+  console.log(`ocr job running!(${visionAPICount})`);
   const ary = fs.readdirSync(ROOT_DIR);
   const dir = ary[ary.length - 1];
   if (!dir) {
@@ -90,7 +90,7 @@ const jobFn = async function () {
       }
     }, filePath);
   }
-  console.log('job complete!');
+  console.log(`job complete!(${visionAPICount})`);
 };
 // jobFn();
 schedule.scheduleJob('* * * * *', jobFn);
@@ -213,6 +213,7 @@ async function visonAPI(content) {
         requests
       }
     });
+    visionAPICount++;
     return result.data.responses[0];
     // console.log(result.data.responses[0]);
   } catch (e) {
